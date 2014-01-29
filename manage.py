@@ -10,7 +10,7 @@ if __name__ == '__main__':
             )
     # Required
     parser.add_argument('env', metavar='env', type=str, help='the environment, e.g. production, qa')
-    parser.add_argument('command', metavar='command', type=str, help='the command to perform.', choices=['commission', 'decommission', 'deploy'])
+    parser.add_argument('command', metavar='command', type=str, help='the command to perform.', choices=['commission', 'decommission', 'deploy', 'clean'])
 
     # Optional
     parser.add_argument('--min_size', type=int, help='the minimum autoscaling size', default=1)
@@ -36,3 +36,6 @@ if __name__ == '__main__':
 
     elif args.command == 'deploy':
         cloud.deploy(args.env)
+
+    elif args.command == 'clean':
+        cloud.clean(args.env)

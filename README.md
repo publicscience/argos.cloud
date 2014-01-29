@@ -41,6 +41,9 @@ $ python manage.py qa deploy
 # Decommission it (i.e. dismantle the infrastructure)
 $ python manage.py qa decommission
 
+# Clean it (i.e. delete the image and its instance)
+$ python manage.py qa clean
+
 # For other options, see
 $ python manage.py -h
 ```
@@ -64,7 +67,9 @@ The commissioning process works like so:
 template for the application and worker instances. This instance
 provisions itself with SaltStack, then removes the Salt state trees (to
 scrub it of sensitive data). For this image, all necessary application
-packages are installed, but no configuration files are copied over.
+packages are installed, but no configuration files are copied over. The
+instance is automatically deleted after the image has been created from
+it.
 * The master instance is created; this is the Salt master which
 provisions everything else.
 * The database instance is created; it is provisioned by the master
@@ -87,3 +92,10 @@ commit from GitHub on all the application and worker instances.
 ### Decommissioning
 This just deletes everything that was created during the commissioning
 process, except for the image (unless its deletion is specified).
+
+### Cleaning
+If you hit a snag while generating the image, you may want to clean
+things up. This command will do that for you by removing the image
+instance (if it still exists) and the image itself (if it still exists).
+Normally, commissioning will automatically clean things before it gets
+going, but sometimes you have to be explicit.

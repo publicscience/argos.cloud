@@ -174,6 +174,15 @@ def deploy(env):
         command.ssh(['salt', '-G', 'roles:app or roles:worker', 'state.highstate'], **connection)
         manage.close_ssh(master)
 
+def clean(env):
+    """
+    Cleans up image instances and images.
+    """
+    names = config.cloud_names(env)
+    name = names['APP_IMAGE']
+    manage.delete_image_instance(name)
+    manage.delete_image(name)
+
 
 def create_broker(name, sec_group, instance_type='m1.medium', size=50):
     """
