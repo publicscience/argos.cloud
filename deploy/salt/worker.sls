@@ -7,7 +7,7 @@ include:
 worker:
     cmd.run:
         - cwd: {{ pillar['app_path'] }}
-        - name: {{ pillar['env_path'] }}bin/celeryd --loglevel=info --config=cloud.celery_config --logfile=/var/log/celery.log
+        - name: {{ pillar['env_path'] }}bin/celeryd --loglevel=info --config=jobs.celery_config --logfile=/var/log/celery.log
         - require:
             - virtualenv: venv
             - cmd: nltk-data
