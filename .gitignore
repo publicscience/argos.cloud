@@ -1,0 +1,8 @@
+.DS_Store
+*.pyc
+*.swp
+*.pem
+cloud/config.ini
+id_rsa
+id_rsa.pub
+logger/logs/*.log

@@ -1,0 +1,1 @@
+git+git://github.com/boto/boto.git@py3kport
