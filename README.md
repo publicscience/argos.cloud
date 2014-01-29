@@ -14,14 +14,16 @@ $ pip install -r requirements.txt
 ## Configuration
 You will need to supply a few configuration files and keys:
 * The AWS key you use to authenticate on EC2 goes into `cloud/keys/`.
+* Your GitHub SSH keys (for the project repo) go into
+`deploy/salt/deploy/keys/`.
 * Configure `cloud/config.ini` to your needs (this contains settings for
-        interacting with AWS)
+        interacting with AWS).
 * Configure `deploy/config.py` to your needs (this contains your
-        application settings)
+        application settings).
 * Configure `deploy/celery_config.py` to your needs (this contains your
-        [Celery](http://www.celeryproject.org/) settings)
+        [Celery](http://www.celeryproject.org/) settings).
 * Configure `deploy/mail_config.py` to your needs (this contains your
-        email settings)
+        email settings).
 
 
 
