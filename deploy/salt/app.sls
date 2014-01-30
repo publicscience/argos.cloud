@@ -44,8 +44,8 @@ nginx:
 # Copy over the app config.
 app-config:
     file.managed:
-        - name: {{ pillar['app_path'] }}conf/{{ grains['env'] }}-app.py
-        - source: salt://deploy/app-config.py
+        - name: {{ pillar['app_path'] }}conf/{{ grains['env'] }}_app.py
+        - source: salt://deploy/app_config.py
         - template: jinja
         - require:
             - git: app
@@ -53,8 +53,8 @@ app-config:
 # Copy over the Celery config.
 celery-config:
     file.managed:
-        - name: {{ pillar['app_path'] }}conf/{{ grains['env'] }}-celery.py
-        - source: salt://deploy/celery-config.py
+        - name: {{ pillar['app_path'] }}conf/{{ grains['env'] }}_celery.py
+        - source: salt://deploy/celery_config.py
         - template: jinja
         - require:
             - git: app
