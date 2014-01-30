@@ -1,5 +1,6 @@
 from boto.exception import EC2ResponseError
 from cloud import connect
+import time
 
 import logging
 logger = logging.getLogger(__name__)

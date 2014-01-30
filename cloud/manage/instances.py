@@ -39,11 +39,15 @@ def create_instance(name, ami_id, keypair_name, security_group_name, instance_ty
 
 
 def get_instances(name):
+    """
+    Gets running instances tagged with
+    the specified name.
+    """
     ec2 = connect.ec2()
     reservations = ec2.get_all_instances(filters={'tag-key': 'name', 'tag-value': name})
     instances = []
     for reservation in reservations:
-        instances += reservation.instances
+        instances += [i for i in reservation.instances if i.update() != 'terminated']
     return instances
 
 def delete_instances(name):

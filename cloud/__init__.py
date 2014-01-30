@@ -158,21 +158,24 @@ def deploy(env):
     """
     names = config.cloud_names(env)
     master = names['MASTER']
+    sec_name = names['SG']
     instances = manage.get_instances(master)
     if not instances:
         logger.warn('A master instance for {0} was not found (looked for {1})'.format(env, master))
     else:
+        master_dns = instances[0].public_dns_name
         logger.info('Using key at {0} as {1}.'.format(PATH_TO_KEY, INSTANCE_USER))
+        logger.info('Deploying through master instance at {0}'.format(master_dns))
 
         connection = {
-            'host': instances[0].public_dns_name,
+            'host': master_dns,
             'user': INSTANCE_USER,
             'key': PATH_TO_KEY
         }
 
-        manage.open_ssh(master)
-        command.ssh(['salt', '-G', 'roles:app or roles:worker', 'state.highstate'], **connection)
-        manage.close_ssh(master)
+        manage.open_ssh(sec_name)
+        command.ssh(['sudo', 'salt', '-G', 'roles:app', 'state.highstate'], **connection)
+        manage.close_ssh(sec_name)
 
 def clean(env):
     """
