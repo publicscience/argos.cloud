@@ -22,9 +22,6 @@ You will need to supply a few configuration files and keys:
         application settings).
 * Configure `deploy/celery_config.py` to your needs (this contains your
         [Celery](http://www.celeryproject.org/) settings).
-* Configure `deploy/mail_config.py` to your needs (this contains your
-        email settings).
-
 
 
 ## Usage
