@@ -27,19 +27,34 @@ uwsgi:
         - enable: True
         - require:
             - pkg: uwsgi
-            - file: uwsgi_init
+            - file: uwsgi-init
             - file: fastrouter
     pkg.installed:
         - name: uwsgi
 
+
+nginx-conf:
+    file.managed:
+        - name: /etc/nginx/sites-available/default
+        - source: salt://deploy/nginx.conf
+        - template: jinja
+        - require:
+            - pkg: nginx
+
 nginx:
     pkg.installed:
         - name: nginx
+    file.symlink:
+        - name: /etc/nginx/sites-enabled/default
+        - target: /etc/nginx/sites-available/default
+        - require:
+            - file: nginx-conf
     service.running:
         - enable: True
         - require:
             - service: uwsgi
             - pkg: nginx
+            - file: nginx
 
 # Copy over the app config.
 app-config:
