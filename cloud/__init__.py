@@ -90,13 +90,14 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', master_in
     ms_pub_dns, ms_prv_dns = create_master(names['MASTER'], names['SG'], instance_type=master_instance_type)
     db_pub_dns, db_prv_dns = create_database(names['DB'], ms_prv_dns, names['SG'], instance_type=database_instance_type)
     #mq_pub_dns, mq_prv_dns = create_broker(names['MQ'], ms_prv_dns, names['SG'], instance_type=broker_instance_type) # Not using distributed tasks at the moment.
+    mq_pub_dns, mq_prv_dns = ('111.111.111.111', '111.111.111.111') # fake
 
     # Replace the $master_dns var in the app init script with the Salt Master DNS name,
     # so app instances (minions) will know where to connect to get provisioned.
     app_init_script = load_script('scripts/setup_app.sh',
             master_dns=ms_prv_dns,
             db_dns=db_prv_dns,
-            #mq_dns=mq_prv_dns # not using distributed tasks at the moment.
+            mq_dns=mq_prv_dns
     )
 
     # Create the app autoscaling group.
@@ -184,7 +185,7 @@ def clean(env):
     manage.delete_image(name)
 
 
-def create_broker(name, sec_group, instance_type='m1.medium', size=50):
+def create_broker(name, master_dns, sec_group, instance_type='m1.medium', size=50):
     """
     Create the broker/message queue instance (RabbitMQ and Redis).
     """
@@ -192,7 +193,7 @@ def create_broker(name, sec_group, instance_type='m1.medium', size=50):
 
     bdm = manage.create_block_device(size=size, delete=True)
     init_script = load_script('scripts/setup_mq.sh',
-            master_dns=ms_prv_dns
+            master_dns=master_dns
     )
 
     instance = manage.create_instance(
@@ -207,7 +208,7 @@ def create_broker(name, sec_group, instance_type='m1.medium', size=50):
 
     return instance.public_dns_name, instance.private_dns_name
 
-def create_database(name, sec_group, instance_type='m1.medium', size=500):
+def create_database(name, master_dns, sec_group, instance_type='m1.medium', size=500):
     """
     Create the database instance.
     """
@@ -218,7 +219,7 @@ def create_database(name, sec_group, instance_type='m1.medium', size=500):
     # Do NOT delete this volume on termination, since it will have our processed data.
     bdm = manage.create_block_device(size=size, delete=False)
     init_script = load_script('scripts/setup_db.sh',
-            master_dns=ms_prv_dns
+            master_dns=master_dns
     )
 
     instance = manage.create_instance(

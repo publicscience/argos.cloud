@@ -14,7 +14,7 @@ sudo sed -i "s/#startup_states: ''/startup_states: highstate/" /etc/salt/minion
 # Set the `roles` grain for this instance to be 'app'.
 echo -e 'roles:\n  - app' | sudo tee -a /etc/salt/grains
 echo -e 'dbhost: $db_dns' | sudo tee -a /etc/salt/grains
-#echo -e 'mqhost: $mq_dns' | sudo tee -a /etc/salt/grains # not using distributed tasks at the moment
+echo -e 'mqhost: $mq_dns' | sudo tee -a /etc/salt/grains # not using distributed tasks at the moment
 
 # Start the salt minion backup.
 sudo service salt-minion start

@@ -1,12 +1,12 @@
 # Celery config.
 # Broker (message queue) url.
-BROKER_URL = 'amqp://guest@localhost//'
+BROKER_URL = 'amqp://guest@{{ grains["mqhost"] }}//'
 
 # Try connecting ad infinitum.
 BROKER_CONNECTION_MAX_RETRIES = None
 
 # Result backend.
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://{{ grains["mqhost"] }}:6379/0'
 
 # What modules to import on start.
 CELERY_IMPORTS = ('tests.tasks_test', 'jobs', 'digester.wikidigester',)

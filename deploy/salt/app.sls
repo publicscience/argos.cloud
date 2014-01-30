@@ -47,6 +47,7 @@ app-config:
     file.managed:
         - name: {{ pillar['app_path'] }}config.py
         - source: salt://deploy/config.py
+        - template: jinja
         - require:
             - git: app
 
@@ -56,5 +57,6 @@ celery-config:
     file.managed:
         - name: {{ pillar['app_path'] }}jobs/celery_config.py
         - source: salt://deploy/celery_config.py
+        - template: jinja
         - require:
             - git: app
