@@ -1,3 +1,5 @@
+from boto.ec2.autoscale import LaunchConfiguration, AutoScalingGroup, ScalingPolicy
+from boto.ec2.cloudwatch import MetricAlarm
 from cloud import connect
 
 import logging

@@ -20,8 +20,6 @@ And they can all also be dismantled.
 Configuration is in `config.ini`.
 """
 
-from boto.ec2.autoscale import LaunchConfiguration, AutoScalingGroup, ScalingPolicy
-from boto.ec2.cloudwatch import MetricAlarm
 
 from cloud.util import get_filepath, load_script
 from cloud import manage, config, command
@@ -106,7 +104,7 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', master_in
             names['AG'],
             app_ami_id,
             app_init_script,
-            names['LG'],
+            names['LC'],
             names['SG'],
             KEYPAIR_NAME,
             instance_type=instance_type,
