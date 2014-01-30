@@ -42,21 +42,19 @@ nginx:
             - pkg: nginx
 
 # Copy over the app config.
-# TO DO this needs to get the proper database host.
 app-config:
     file.managed:
-        - name: {{ pillar['app_path'] }}config.py
-        - source: salt://deploy/config.py
+        - name: {{ pillar['app_path'] }}conf/{{ grains['env'] }}-app.py
+        - source: salt://deploy/app-config.py
         - template: jinja
         - require:
             - git: app
 
 # Copy over the Celery config.
-# TO DO this needs to get the proper broker and backend hosts.
 celery-config:
     file.managed:
-        - name: {{ pillar['app_path'] }}jobs/celery_config.py
-        - source: salt://deploy/celery_config.py
+        - name: {{ pillar['app_path'] }}conf/{{ grains['env'] }}-celery.py
+        - source: salt://deploy/celery-config.py
         - template: jinja
         - require:
             - git: app

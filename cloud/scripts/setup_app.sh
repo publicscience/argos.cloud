@@ -15,6 +15,11 @@ sudo sed -i "s/#startup_states: ''/startup_states: highstate/" /etc/salt/minion
 echo -e 'roles:\n  - app' | sudo tee -a /etc/salt/grains
 echo -e 'dbhost: $db_dns' | sudo tee -a /etc/salt/grains
 echo -e 'mqhost: $mq_dns' | sudo tee -a /etc/salt/grains # not using distributed tasks at the moment
+echo -e 'env: $env' | sudo tee -a /etc/salt/grains
+
+# Set the env var for the system.
+ARGOS_ENV=env
+echo -e 'ARGOS_ENV=$env' | sudo tee -a /etc/environment
 
 # Start the salt minion backup.
 sudo service salt-minion start

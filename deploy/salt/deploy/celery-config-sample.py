@@ -1,6 +1,6 @@
 # Celery config.
 # Broker (message queue) url.
-BROKER_URL = 'amqp://guest@{{ grains["mqhost"] }}//'
+BROKER_URL = 'amqp://guest@{{ grains["mqhost"] }}:5672//'
 
 # Try connecting ad infinitum.
 BROKER_CONNECTION_MAX_RETRIES = None

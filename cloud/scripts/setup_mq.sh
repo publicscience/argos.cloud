@@ -19,6 +19,11 @@ sudo sed -i "s/#startup_states: ''/startup_states: highstate/" /etc/salt/minion
 
 # Set the grains so we can target minions as workers.
 echo -e 'roles:\n  - broker' | sudo tee -a /etc/salt/grains
+echo -e 'env: $env' | sudo tee -a /etc/salt/grains
+
+# Set the env var for the system.
+ARGOS_ENV=env
+echo -e 'ARGOS_ENV=$env' | sudo tee -a /etc/environment
 
 # Start the salt minion backup.
 sudo service salt-minion start
