@@ -1,1 +1,4 @@
-git+git://github.com/boto/boto.git@py3kport
+# Use my fork for now; the official one still has
+# some Base64 user data encoding issues.
+# https://github.com/boto/boto/pull/1698
+git+git://github.com/ftzeng/boto.git@py3kport
