@@ -78,8 +78,17 @@ nltk-data:
         #- name: {{ pillar['env_path'] }}bin/python -m nltk.downloader wordnet stopwords punkt words maxent_treebank_pos_tagger maxent_ne_chunker
         #- require:
             #- virtualenv: venv
-    cmd.script:
-        - source: salt://scripts/install-nltk_data.sh
+    # Ugh even this hangs indefinitely.
+    #cmd.script:
+        #- source: salt://scripts/install-nltk_data.sh
+    # Do this instead:
+    file.managed:
+        - name: /usr/share/nltk_data.tar.gz
+        - source: salt://deploy/nltk_data.tar.gz
+        - makedirs: True
+    cmd.run:
+        - cwd: /usr/share/
+        - name: tar -zxvf nltk_data.tar.gz
 
 # Required by mwlib.
 mwlib-deps:
