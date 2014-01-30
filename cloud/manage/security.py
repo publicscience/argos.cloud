@@ -5,7 +5,7 @@ import time
 import logging
 logger = logging.getLogger(__name__)
 
-def create_security_group(name, desc='A security group.', ports=[80]):
+def create_security_group(name, desc='A security group.', ports=[80], src_group=None):
     """
     Creates or gets an existing security group,
     and authorizes the specified ports.
@@ -22,8 +22,11 @@ def create_security_group(name, desc='A security group.', ports=[80]):
 
     # Authorize specified ports.
     for port in ports:
-        if not check_rule(sec_group, port):
-            sec_group.authorize('tcp', port, port, '0.0.0.0/0')
+        if not check_rule(sec_group, port, src_group=src_group):
+            if src_group is not None:
+                sec_group.authorize('tcp', port, port, src_group=src_group)
+            else:
+                sec_group.authorize('tcp', port, port, '0.0.0.0/0')
 
     # Authorize internal communication.
     try:
@@ -45,6 +48,12 @@ def get_security_group(name):
     for sg in ec2.get_all_security_groups():
         if sg.name == name:
             return sg
+
+def security_group_name(name):
+    """
+    Helper to generate security group names.
+    """
+    return '{0}-security'.format(name)
 
 
 def delete_security_group(name, purge=False):
@@ -100,15 +109,31 @@ def check_ssh(sec_group):
     # Check if SSH is already authorized.
     return check_rule(sec_group, 22)
 
-def check_rule(sec_group, port, ip='0.0.0.0/0', protocol='tcp'):
+def check_rule(sec_group, port, protocol='tcp', ip='0.0.0.0/0', src_group=None):
+    """
+    Check if a port has been authorized on a security group.
+    It can check that it has been authorized for either an ip or a particular group.
+
+    Args:
+        | sec_group         -- the security group to check on
+        | port (str)        -- the port to check for
+        | protocol (str)    -- the protocol to check (tcp, udp, or icmp)
+        | ip (str)          -- the ip to check if is allowed access
+        | src_group         -- the security group to check if is allowed access
+    """
     rule_exists = False
     if type(port) == int:
         port = str(port)
     for r in sec_group.rules:
         if r.from_port == port and r.to_port == port and r.ip_protocol == protocol:
             for grant in r.grants:
-                if grant.cidr_ip == ip:
-                    rule_exists = True
-                    break
+                if src_group is not None:
+                    if grant.group_id == src_group.id:
+                        rule_exists = True
+                        break
+                else:
+                    if grant.cidr_ip == ip:
+                        rule_exists = True
+                        break
     return rule_exists
 

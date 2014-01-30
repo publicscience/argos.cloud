@@ -32,7 +32,6 @@ def cloud_names(env):
     names = {
             'LC': '{0}-{1}-launchconfig'.format(name, env),
             'AG': '{0}-{1}-autoscale'.format(name, env),
-            'SG': '{0}-{1}-security'.format(name, env),
             'DB': '{0}-{1}-database'.format(name, env),
             'MQ': '{0}-{1}-broker'.format(name, env),
             'MASTER': '{0}-{1}-master'.format(name, env),
