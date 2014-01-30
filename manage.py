@@ -13,9 +13,9 @@ if __name__ == '__main__':
     parser.add_argument('command', metavar='command', type=str, help='the command to perform.', choices=['commission', 'decommission', 'deploy', 'clean'])
 
     # Optional
+    parser.add_argument('-ssh', help='enable ssh on app and master instances', action='store_true', default=False)
     parser.add_argument('--min_size', type=int, help='the minimum autoscaling size', default=1)
     parser.add_argument('--max_size', type=int, help='the maximum autoscaling size', default=4)
-    parser.add_argument('--ssh', type=bool, help='whether or not ssh should be enabled', default=False)
     parser.add_argument('--instance_type', type=str, help='the instance type for the application infrastructure', default='m1.medium')
     args = parser.parse_args()
 
