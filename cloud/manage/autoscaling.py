@@ -1,6 +1,8 @@
 from boto.ec2.autoscale import LaunchConfiguration, AutoScalingGroup, ScalingPolicy
 from boto.ec2.cloudwatch import MetricAlarm
 from cloud import connect
+from . import instances
+import time
 
 import logging
 logger = logging.getLogger(__name__)
@@ -47,7 +49,7 @@ def delete_autoscaling_group(name, launch_config_name):
             group_instances = [r.instances[0] for r in ec2.get_all_instances(instance_ids=group_instance_ids)]
 
             logger.info('Waiting for group instances to shutdown...')
-            manage.wait_until_terminated(group_instances)
+            instances.wait_until_terminated(group_instances)
 
         # Wait until all group activities have stopped.
         group_activities = group.get_activities()
