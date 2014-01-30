@@ -21,10 +21,14 @@ def create_security_group(name, desc='A security group.', ports=[80]):
 
     # Authorize specified ports.
     for port in ports:
-        sec_group.authorize('tcp', port, port, '0.0.0.0/0')
+        if not check_rule(sec_group, port):
+            sec_group.authorize('tcp', port, port, '0.0.0.0/0')
 
     # Authorize internal communication.
-    sec_group.authorize(src_group=sec_group)
+    try:
+        sec_group.authorize(src_group=sec_group)
+    except EC2ResponseError:
+        logger.info('Ingress security group access already authorized.')
 
     return sec_group
 
@@ -93,11 +97,16 @@ def close_ssh(name):
 
 def check_ssh(sec_group):
     # Check if SSH is already authorized.
+    return check_rule(sec_group, 22)
+
+def check_rule(sec_group, port, ip='0.0.0.0/0', protocol='tcp'):
     rule_exists = False
+    if type(port) == int:
+        port = str(port)
     for r in sec_group.rules:
-        if r.from_port == '22' and r.to_port == '22' and r.ip_protocol == 'tcp':
+        if r.from_port == port and r.to_port == port and r.ip_protocol == protocol:
             for grant in r.grants:
-                if grant.cidr_ip == '0.0.0.0/0':
+                if grant.cidr_ip == ip:
                     rule_exists = True
                     break
     return rule_exists
