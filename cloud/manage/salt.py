@@ -1,3 +1,11 @@
+"""
+Salt
+==============
+
+Manages the transferring and clean up
+of the Salt state tree.
+"""
+
 from cloud import command
 from cloud.util import get_filepath
 import time

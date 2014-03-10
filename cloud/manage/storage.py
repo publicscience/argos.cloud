@@ -1,3 +1,10 @@
+"""
+Storage
+==============
+
+Manages the creation of block device storage.
+"""
+
 from boto.ec2.blockdevicemapping import BlockDeviceMapping, BlockDeviceType
 
 def create_block_device(size=10, delete=False):

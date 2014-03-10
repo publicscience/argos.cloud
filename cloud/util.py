@@ -1,4 +1,7 @@
 """
+Utility
+==============
+
 Some utility functions.
 """
 

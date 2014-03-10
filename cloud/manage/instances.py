@@ -1,3 +1,10 @@
+"""
+Instances
+==============
+
+Manages instances.
+"""
+
 import time
 from cloud import connect
 

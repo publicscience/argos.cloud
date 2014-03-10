@@ -1,3 +1,11 @@
+"""
+Images
+==============
+
+Manages image instances and
+the creation of images from them.
+"""
+
 from boto.exception import EC2ResponseError
 from cloud import connect, command
 from . import instances, security, storage, salt

@@ -45,6 +45,13 @@ $ python manage.py qa clean
 $ python manage.py -h
 ```
 
+## Making Changes
+If the needs for the Argos application change, for the most part you
+won't need to modify anything in the `cloud/` directory (unless more
+comprehensive infrastructural changes are necessary). If its a matter of
+a few additional packages, for example, you should only need to modify
+things in `deploy/` (i.e. the Salt state tree).
+
 ## About
 The application infrastructure runs on Amazon Web Services.
 
