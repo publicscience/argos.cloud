@@ -36,7 +36,7 @@ venv:
         - cwd: {{ pillar['app_path'] }}
         - venv_bin: virtualenv-3.3
         - requirements: {{ pillar['app_path'] }}requirements.txt
-        - no_site_packages: true
+        - system_site_packages: false
         - require:
             - pkg: app-pkgs
             - pip: pip-pkgs

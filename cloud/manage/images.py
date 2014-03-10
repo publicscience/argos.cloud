@@ -164,28 +164,9 @@ def create_image_instance(name, ami_id, keypair_name, instance_user, path_to_key
         }
         logger.info('Using key at {0} as {1}.'.format(path_to_key, instance_user))
 
-        # Setup base instance with the Salt state tree.
-        # This waits until the instance is ready to accept commands.
-        salt.transfer_salt(**connection)
-
-        # Transfer init script.
-        logger.info('Transferring the init script...')
-        image_init_script = get_filepath('scripts/setup_image.sh')
-        command.scp(image_init_script, '/tmp/', **connection)
-
-        # Execute the script.
-        logger.info('Executing the init script (this may take awhile)...')
-        command.ssh(['sudo', 'bash', '/tmp/setup_image.sh'], **connection)
-
-        # Delete the script.
-        logger.info('Cleaning up the init script...')
-        command.ssh(['sudo', 'rm', '/tmp/setup_image.sh'], **connection)
-
-        # Clean up the Salt state tree;
-        # Instances based on this image should be provisioned
-        # via a Salt Master (so no sensitive files remain on the image).
-        logger.info('Cleaning up the Salt state tree...')
-        salt.clean_salt(**connection)
+        setup_image(host=instance.public_dns_name,
+                    user=instance_user,
+                    key=path_to_key)
 
         logger.info('Worker base instance successfully created.')
 
@@ -200,4 +181,33 @@ def create_image_instance(name, ami_id, keypair_name, instance_user, path_to_key
         # Re-raise the error.
         raise e
 
+def setup_image(host, user, key):
+    connection = {
+        'host': host,
+        'user': user,
+        'key': key
+    }
+    logger.info('Using key at {0} as {1}.'.format(key, user))
 
+    # Setup base instance with the Salt state tree.
+    # This waits until the instance is ready to accept commands.
+    salt.transfer_salt(**connection)
+
+    # Transfer init script.
+    logger.info('Transferring the init script...')
+    image_init_script = get_filepath('scripts/setup_image.sh')
+    command.scp(image_init_script, '/tmp/', **connection)
+
+    # Execute the script.
+    logger.info('Executing the init script (this may take awhile)...')
+    command.ssh(['sudo', 'bash', '/tmp/setup_image.sh'], **connection)
+
+    # Delete the script.
+    logger.info('Cleaning up the init script...')
+    command.ssh(['sudo', 'rm', '/tmp/setup_image.sh'], **connection)
+
+    # Clean up the Salt state tree;
+    # Instances based on this image should be provisioned
+    # via a Salt Master (so no sensitive files remain on the image).
+    logger.info('Cleaning up the Salt state tree...')
+    salt.clean_salt(**connection)
