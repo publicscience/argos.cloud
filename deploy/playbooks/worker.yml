@@ -1,0 +1,6 @@
+- hosts: workers
+  tasks:
+      - include: base.yml
+
+      - name: Run Celery
+        command: {{ venv_path }}/bin/celeryd --loglevel=info --config=jobs.celery_config --logfile=/var/log/celery.log chdir={{ repo_path }}

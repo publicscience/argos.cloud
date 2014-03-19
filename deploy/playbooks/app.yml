@@ -1,0 +1,9 @@
+- hosts: appservers
+  vars:
+      git_repo: https://github.com/publicscience/argos.git
+      venv_path: /var/env/argos
+      repo_path: /var/www/argos
+  sudo: yes
+  remote_user: vagrant
+  tasks:
+      - include: base.yml
