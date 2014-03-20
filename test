@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [ -z $1 ]
+then
+    echo -e "$(tput setaf 3)What role do you want to test?...$(tput sgr0)"
+    for ROLE in image app worker broker database
+    do
+        echo -e $ROLE
+    done
+    echo -e "$(tput setaf 3)Run with ./test.sh <role>$(tput sgr0)"
+else
+    cd tests/vm/
+    vagrant up
+    ansible-playbook -i hosts ../../deploy/playbooks/$1.yml --private-key=~/.vagrant.d/insecure_private_key
+    vagrant destroy
+fi

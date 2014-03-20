@@ -114,12 +114,7 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', master_in
 
     # Replace the $master_dns var in the app init script with the Salt Master DNS name,
     # so app instances (minions) will know where to connect to get provisioned.
-    app_init_script = load_script('scripts/setup_app.sh',
-            master_dns=ms_prv_dns,
-            db_dns=db_prv_dns,
-            mq_dns=mq_prv_dns,
-            env=env
-    )
+    app_init_script = load_script('scripts/setup_env.sh', env=env)
 
     # Create the app autoscaling group.
     manage.create_autoscaling_group(

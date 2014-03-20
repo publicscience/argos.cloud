@@ -1,6 +1,6 @@
 - hosts: brokers
   sudo: yes
-  remote_user: vagrant
+  remote_user: '{{ remote_user }}'
   tasks:
       # Necessary for Ansible's apt_repository
       - name: Install apt_repository dependencies
@@ -26,10 +26,12 @@
 
       - name: Copy Redis config
         copy: src=../files/redis.conf dest=/etc/redis/redis.conf
-        notify: restart redis # restart redis if config has changed.
+        #notify: restart redis # restart redis if config has changed.
 
       - name: Ensure Redis is running
         service: name=redis-server enabled=yes state=started
-  handlers:
-      - name: restart redis
-        service: name=redis-server state=restarted
+
+  #handlers:
+      # This is hanging for some reason.
+      #- name: restart redis
+      #service: name=redis-server state=restarted

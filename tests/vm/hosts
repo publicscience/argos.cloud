@@ -1,23 +1,26 @@
 [image]
-
-[appservers]
-
-[dbservers]
 127.0.0.1:2222
 
+[appservers]
+127.0.0.1:2222
+
+[dbservers]
+192.168.124.168
+
 [brokers]
+127.0.0.1:2222
 
 [workers]
+127.0.0.1:2222
 
-[aws:children]
-image
+[vagrant:children]
 appservers
 dbservers
 brokers
 workers
 
-[aws:vars]
-remote_user=ubuntu
+[vagrant:vars]
+remote_user=vagrant
 git_repo=https://github.com/publicscience/argos.git
 venv_path=/var/env/argos
 repo_path=/var/www/argos

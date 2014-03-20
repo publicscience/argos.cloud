@@ -46,10 +46,10 @@ $ python manage.py -h
 ## Testing
 You can test that the provisioning works with the testing script:
 ```
-# ./test.sh <role>
+# ./test <role>
 
 # Example:
-$ ./test.sh app
+$ ./test app
 ```
 
 This sets up a [Vagrant](https://www.vagrantup.com/) VM (using a base

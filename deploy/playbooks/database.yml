@@ -1,6 +1,6 @@
 - hosts: dbservers
   sudo: yes
-  remote_user: vagrant
+  remote_user: '{{ remote_user }}'
   tasks:
       - name: ensure apt cache is up to date
         action: apt update_cache=yes
@@ -19,6 +19,5 @@
         service: name=postgresql enabled=yes state=started
 
       - name: Create postgres user
-        postgresql_user: name=argos_production password=some_password role_attr_flags=CREATEDB,NOSUPERUSER
+        postgresql_user: name={{ db_user }} role_attr_flags=CREATEDB,NOSUPERUSER
         sudo_user: postgres
-        # this name and password should be pulled from elsewhere; they need to be the same as those set for the Flask configuration

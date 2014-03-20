@@ -1,6 +1,28 @@
 - hosts: workers
+  sudo: yes
+  remote_user: '{{ remote_user }}'
+  vars:
+      db_host: '{{ hostvars[groups.dbservers[0]].ansible_eth0.ipv4.address }}'
   tasks:
-      - include: base.yml
+      - include: tasks/base.yml
+      - include: tasks/config.yml
 
-      - name: Run Celery
-        command: {{ venv_path }}/bin/celeryd --loglevel=info --config=jobs.celery_config --logfile=/var/log/celery.log chdir={{ repo_path }}
+      - name: create celery group
+        group: name=celery state=present
+
+      - name: create celery user
+        user: name=celery group=celery state=present
+
+      - name: copy celery init.d script
+        copy: src=../files/celery/celeryd dest=/etc/init.d/celeryd mode=0755
+
+      - name: copy celery config
+        template: src=../files/celery/celeryd_config dest=/etc/default/celeryd owner=root
+        notify: restart celery
+
+      - name: ensure celery is running
+        service: name=celeryd state=started
+
+  handlers:
+      - name: restart celery
+        service: name=celeryd state=restarted

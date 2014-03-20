@@ -1,0 +1,5 @@
+- hosts: image
+  sudo: yes
+  remote_user: '{{ remote_user }}'
+  tasks:
+      - include: tasks/base.yml
