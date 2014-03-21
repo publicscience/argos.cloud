@@ -8,4 +8,3 @@ id_rsa.pub
 logger/logs/*.log
 *config.py
 .vagrant
-deploy/hosts/*
