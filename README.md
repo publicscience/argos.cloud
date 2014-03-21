@@ -11,6 +11,11 @@ $ source ~/envs/argos.cloud/bin/activate
 $ pip install -r requirements.txt
 ```
 
+You must also separately install Ansible:
+```
+$ sudo pip install ansible
+```
+
 ## Configuration
 You will need to supply a few configuration files and keys:
 * The AWS key you use to authenticate on EC2 goes into `cloud/keys/`.

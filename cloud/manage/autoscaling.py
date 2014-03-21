@@ -26,9 +26,24 @@ def autoscaling_group_exists(name):
         | int   -- number of AutoScale Groups found.
     """
     asg = connect.asg()
-
     groups = asg.get_all_groups(names=[name])
     return len(groups)
+
+
+def get_autoscaling_instances(name):
+    """
+    Get autoscaling groups by name and return
+    all of their instances.
+    """
+    asg = connect.asg()
+    ec2 = connect.ec2()
+    groups = asg.get_all_groups(names=[name])
+    instance_ids = []
+    for group in groups:
+        instance_ids += [i.instance_id for i in group.instances]
+
+    reservations = ec2.get_all_instances(instance_ids)
+    return [i for r in reservations for i in r.instances]
 
 
 def delete_autoscaling_group(name, launch_config_name):

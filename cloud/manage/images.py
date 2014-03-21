@@ -8,8 +8,8 @@ the creation of images from them.
 
 from boto.exception import EC2ResponseError
 from cloud import connect, command
-from . import instances, security, storage, salt
-from cloud.util import get_filepath
+from . import instances, security, storage, provision
+from cloud.util import get_filepath, template
 
 import logging
 logger = logging.getLogger(__name__)
@@ -111,7 +111,7 @@ def delete_image_instance(name):
     logger.info('Base instance cleanup complete.')
 
 
-def create_image_instance(name, ami_id, keypair_name, instance_user, path_to_key):
+def create_image_instance(name, ami_id, keypair_name, path_to_key):
     """
     Create the base instance for an image.
     """
@@ -155,20 +155,12 @@ def create_image_instance(name, ami_id, keypair_name, instance_user, path_to_key
                 instance_type='m1.medium',
                 block_device_map=bdm
         )
+
         logger.info('Base instance has launched at {0}. Configuring...'.format(instance.public_dns_name))
-
-        connection = {
-            'host': instance.public_dns_name,
-            'user': instance_user,
-            'key': path_to_key
-        }
-        logger.info('Using key at {0} as {1}.'.format(path_to_key, instance_user))
-
         setup_image(host=instance.public_dns_name,
-                    user=instance_user,
                     key=path_to_key)
 
-        logger.info('Worker base instance successfully created.')
+        logger.info('Base instance successfully created.')
 
         return instance
 
@@ -181,33 +173,12 @@ def create_image_instance(name, ami_id, keypair_name, instance_user, path_to_key
         # Re-raise the error.
         raise e
 
-def setup_image(host, user, key):
-    connection = {
-        'host': host,
-        'user': user,
-        'key': key
-    }
-    logger.info('Using key at {0} as {1}.'.format(key, user))
+def setup_image(host, key):
+    # Create a hosts file with the proper image instance host.
+    image_host_file = open('deploy/hosts/image', 'wb')
+    image_host_file.write(template('templates/image_host', image_host=host))
+    image_host_file.close()
 
-    # Setup base instance with the Salt state tree.
-    # This waits until the instance is ready to accept commands.
-    salt.transfer_salt(**connection)
-
-    # Transfer init script.
-    logger.info('Transferring the init script...')
-    image_init_script = get_filepath('scripts/setup_image.sh')
-    command.scp(image_init_script, '/tmp/', **connection)
-
-    # Execute the script.
-    logger.info('Executing the init script (this may take awhile)...')
-    command.ssh(['sudo', 'bash', '/tmp/setup_image.sh'], **connection)
-
-    # Delete the script.
-    logger.info('Cleaning up the init script...')
-    command.ssh(['sudo', 'rm', '/tmp/setup_image.sh'], **connection)
-
-    # Clean up the Salt state tree;
-    # Instances based on this image should be provisioned
-    # via a Salt Master (so no sensitive files remain on the image).
-    logger.info('Cleaning up the Salt state tree...')
-    salt.clean_salt(**connection)
+    # Provision the host image.
+    logger.info('Using key at {0}.'.format(path_to_key))
+    provision.provision('image', 'image', key)

@@ -2,7 +2,9 @@
   sudo: yes
   remote_user: '{{ remote_user }}'
   vars:
-      db_host: '{{ hostvars[groups.dbservers[0]].ansible_eth0.ipv4.address }}'
+      db_host: '{{ hostvars[groups.dbservers_internal[0]].ansible_eth0.ipv4.address }}'
+  vars_files:
+      - vars/common.yml
   tasks:
       - include: tasks/base.yml
       - include: tasks/config.yml

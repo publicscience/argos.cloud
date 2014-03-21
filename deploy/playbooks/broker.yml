@@ -1,6 +1,8 @@
 - hosts: brokers
   sudo: yes
   remote_user: '{{ remote_user }}'
+  vars_files:
+      - vars/common.yml
   tasks:
       # Necessary for Ansible's apt_repository
       - name: Install apt_repository dependencies

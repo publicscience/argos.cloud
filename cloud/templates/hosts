@@ -1,0 +1,16 @@
+[appservers]
+$app_hosts
+
+[dbservers]
+$db_hosts
+
+# Not currently being used
+#[brokers]
+#$broker_hosts
+
+# Not currently being used
+#[workers]
+#$worker_hosts
+
+[dbservers_internal]
+$db_hosts_internal

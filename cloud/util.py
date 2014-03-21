@@ -8,7 +8,7 @@ Some utility functions.
 import os
 from string import Template
 
-def load_script(filename, **kwargs):
+def template(filename, **kwargs):
     """
     Loads a script from this directory as bytes.
     This script will be passed as `user-data`.
@@ -21,14 +21,14 @@ def load_script(filename, **kwargs):
     When you specify `**kwargs`, say `foo=bar`, then every instance of `$foo`
     will be replaced with `bar`.
     """
-    script = open(get_filepath(filename), 'r').read()
+    templ = open(get_filepath(filename), 'r').read()
 
     # Substitute for specified vars.
     if kwargs:
-        script = Template(script).substitute(**kwargs)
+        templ = Template(templ).substitute(**kwargs)
 
     # Turn into bytes.
-    return script.encode('utf-8')
+    return templ.encode('utf-8')
 
 
 def get_filepath(filename):
