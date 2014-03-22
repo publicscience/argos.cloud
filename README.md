@@ -15,9 +15,12 @@ You must also separately install Ansible:
 ```
 $ sudo pip install ansible
 ```
+Note that this is done *outside* the virtualenv.
 
 ## Configuration
 You will need to supply a few configuration files and keys:
+
+*Required*
 * The AWS key you use to authenticate on EC2 goes into `cloud/keys/`.
 * Configure `cloud/config.ini` to your needs (this contains settings for
         interacting with AWS).
@@ -26,23 +29,31 @@ You will need to supply a few configuration files and keys:
 * Configure `deploy/files/<env name>celery_config.py` to your needs (this contains your
         [Celery](http://www.celeryproject.org/) settings).
 
+*Optional*
+* Configure other files in `deploy/files/` as needed.
+* Configure provisioning variables in `deploy/playbooks/vars/` as
+needed.
+
 
 ## Usage
 The most important functionality is accessed via the `manage.py` script.
 
 For example:
 ```
-# Commission new QA environment application infrastructure
-$ python manage.py qa commission
+# Activate the virtualenv
+$ source ~/envs/argos.cloud/bin/activate
+
+# Commission new staging environment application infrastructure
+$ python manage.py staging commission
 
 # Deploy new changes to it.
-$ python manage.py qa deploy
+$ python manage.py staging deploy
 
 # Decommission it (i.e. dismantle the infrastructure)
-$ python manage.py qa decommission
+$ python manage.py staging decommission
 
 # Clean it (i.e. delete the image and its instance)
-$ python manage.py qa clean
+$ python manage.py staging clean
 
 # For other options, see
 $ python manage.py -h
@@ -87,18 +98,29 @@ Ansible):
 template for the application and worker instances. For this image, all necessary application
 packages are installed, but no configuration files are copied over. The
 instance is automatically deleted after the image has been created from
-it.
-provisions everything else.
+it. The public host name for this image is saved to
+`deploy/hosts/image` so that Ansible can provision it
+(refer to `cloud.manage.images#setup_image`).
 * The database instance is created.
 * The broker instance is created [currently disabled].
 * An autoscaling group is created for application instances, using the
 image instance as the base.
 * An autoscaling group is created for worker instances, using the
-image instance as the base. 
+image instance as the base [not yet implemented]. 
+* The database host name(s) and application host name(s) (and eventually
+broker and workers as well) are saved to `deploy/hosts/hosts_<env
+name>` so Ansible can provision them (refer to `cloud#make_hosts`). Note
+that because Ansible is provisioning these instances from your local
+computer (which may need to change at some point), these host names must
+be public host names. However, for configuration, e.g. what database
+host the application uses, internal host names are used, so this
+hosts file keeps track of those for filling in configuration files.
 
 ### Deploying
 The deploying process works like so:
-* Use Ansible to run playbooks on the remote instances and keep
+* The environment hosts file (i.e. `deploy/hosts/hosts_<env name>`) is
+updated by finding matching instances on AWS (using their name tags).
+* Ansible runs playbooks on these hosts and keeps
 everything up to date.
 
 ### Decommissioning

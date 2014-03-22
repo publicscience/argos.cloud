@@ -6,9 +6,6 @@ Interface for commanding the cloud.
 """
 
 import subprocess, time
-from os.path import join
-from cloud.util import get_filepath
-from cloud.manage import get_security_group
 
 import logging
 logger = logging.getLogger(__name__)
