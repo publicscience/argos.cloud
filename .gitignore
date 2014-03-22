@@ -6,5 +6,8 @@ config.py
 id_rsa
 id_rsa.pub
 logger/logs/*.log
-*config.py
 .vagrant
+
+# Exclude env configs except the sample one.
+deploy/files/configs/*
+!deploy/files/configs/sample/
