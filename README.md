@@ -6,7 +6,7 @@ Cloud (AWS) management and deployment for
 
 ## Installation
 ```
-$ virtualenv-3.3 ~/envs/argos.cloud --no-site-packages
+$ virtualenv ~/envs/argos.cloud --no-site-packages
 $ source ~/envs/argos.cloud/bin/activate
 $ pip install -r requirements.txt
 ```
@@ -21,8 +21,8 @@ Note that this is done *outside* the virtualenv.
 You will need to supply a few configuration files and keys:
 
 *Required*
-* The AWS key you use to authenticate on EC2 goes into `cloud/keys/`.
-* Configure `cloud/config.ini` to your needs (this contains settings for
+* The AWS key you use to authenticate on EC2 goes into `keys/`.
+* Configure `config.py` to your needs (this contains settings for
         interacting with AWS).
 * Configure `deploy/files/<env name>/app_config.py` to your needs (this contains your
         application settings).
@@ -77,15 +77,15 @@ If the needs for the Argos application change, for the most part you
 won't need to modify anything in the `cloud/` directory (unless more
 comprehensive infrastructural changes are necessary). If its a matter of
 a few additional packages, for example, you should only need to modify
-the playbooks in `deploy/`.
+the playbooks in `deploy/`, or configuration options in `config.py`.
 
 ## About
 The application infrastructure runs on Amazon Web Services.
 
 It consists of:
-* a database server
+* a database server (AWS RDS)
 * a broker server (manages distributed tasks) [currently disabled]
-* application servers (in an autoscaling group)
+* application servers (in an autoscaling group behind a load balancer)
 * worker servers (in an autoscaping group) [not yet implemented]
 
 Server configurations and provisioning is handled by
