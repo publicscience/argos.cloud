@@ -1,2 +1,10 @@
+Jinja2==2.7.2
+MarkupSafe==0.19
+PyYAML==3.10
+ansible==1.5.3
 boto==2.27.0
+ecdsa==0.11
+ipython==1.2.1
+paramiko==1.13.0
+pycrypto==2.6.1
 wsgiref==0.1.2

@@ -11,12 +11,6 @@ $ source ~/envs/argos.cloud/bin/activate
 $ pip install -r requirements.txt
 ```
 
-You must also separately install Ansible:
-```
-$ sudo pip install ansible
-```
-Note that this is done *outside* the virtualenv.
-
 ## Configuration
 You will need to supply a few configuration files and keys:
 
