@@ -6,9 +6,6 @@ Interface for commanding the cloud.
 """
 
 import subprocess, time
-from os.path import join
-from cloud.util import get_filepath, load_script
-from cloud.manage import get_security_group
 
 import logging
 logger = logging.getLogger(__name__)
@@ -67,18 +64,17 @@ def _call_remote_process(cmd, log=False):
     a few times before giving up.
     """
     # Get output of command to check for errors.
-    out = _call_process(cmd, log=log)
+    out = cmd(cmd, log=log)
 
     # Check if we couldn't connect, and try again.
     tries = 0
     while b'Connection refused' in out and tries < 20:
         time.sleep(2)
-        out = _call_process(cmd, log=log)
+        out = cmd(cmd, log=log)
     return out
 
 
-
-def _call_process(cmd, log=False):
+def cmd(cmd, log=False):
     """
     Convenience method for calling a process and getting its results.
 

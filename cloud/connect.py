@@ -6,17 +6,15 @@ Connect to cloud services.
 """
 
 from boto.ec2.autoscale import AutoScaleConnection
-from boto.ec2 import connect_to_region
+from boto.ec2 import connect_to_region as ec2_connect_to_region
 from boto.ec2.cloudwatch import connect_to_region as cw_connect_to_region
+from boto.cloudformation import connect_to_region as cf_connect_to_region
 
-# Load configuration.
-from cloud import config
-c = config.load('cloud')
+import config
 
-REGION = c['REGION']
-ACCESS_KEY = c['AWS_ACCESS_KEY']
-SECRET_KEY = c['AWS_SECRET_KEY']
-
+REGION = config.REGION
+ACCESS_KEY = config.AWS_ACCESS_KEY
+SECRET_KEY = config.AWS_SECRET_KEY
 
 def asg():
     """
@@ -29,7 +27,7 @@ def ec2():
     """
     Creates an EC2 connection.
     """
-    return connect_to_region(
+    return ec2_connect_to_region(
                 REGION,
                 aws_access_key_id=ACCESS_KEY,
                 aws_secret_access_key=SECRET_KEY
@@ -46,3 +44,13 @@ def clw():
                     aws_secret_access_key=SECRET_KEY
                  )
 
+
+def cf():
+    """
+    Creates a CloudFormation connection.
+    """
+    return cf_connect_to_region(
+                REGION,
+                aws_access_key_id=ACCESS_KEY,
+                aws_secret_access_key=SECRET_KEY
+           )

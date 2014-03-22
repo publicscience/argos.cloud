@@ -1,0 +1,51 @@
+- name: ensure apt cache is up to date
+  action: apt update_cache=yes
+
+- name: Install dependencies (system)
+  apt: pkg={{ item }} state=installed
+  with_items:
+      - git
+      - python3.3
+      - python3-pip
+      - unzip # for the NER server and for NLTK data.
+      - bzr # For getting the latest python-dateutil.
+      - openjdk-7-jre # for the NER server.
+      - postgresql-server-dev-9.1 # For psycopg.
+
+- name: Clone git repository
+  git: repo={{ git_repo }} dest={{ repo_path }} force=yes accept_hostkey=yes
+
+- name: Install dependencies (pip)
+  pip: name={{ item }} executable=pip3
+  with_items:
+      - virtualenv
+      - cython
+
+- name: Install scipy dependencies
+  command: sudo apt-get -y build-dep python3-scipy
+
+- name: Install mwlib dependencies
+  apt: pkg={{ item }} state=installed
+  with_items:
+      - libevent-dev
+      - re2c
+
+- name: Install lxml dependencies
+  apt: pkg={{ item }} state=installed
+  with_items:
+      - libxml2-dev
+      - libxslt1-dev
+      - python-dev
+      - lib32z1-dev
+
+- name: Create virtualenv
+  command: virtualenv-3.3 {{ venv_path }} --no-site-packages
+
+- name: Install dependencies (app)
+  pip: requirements={{ repo_path }}/requirements.txt virtualenv={{ venv_path }}
+
+- name: Download NLTK data
+  copy: src=../files/nltk_data.tar.gz dest=/usr/share/nltk_data.tar.gz
+
+- name: Extract NLTK data
+  command: tar -zxvf nltk_data.tar.gz chdir=/usr/share/

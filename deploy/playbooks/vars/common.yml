@@ -1,0 +1,5 @@
+remote_user: ubuntu
+git_repo: https://github.com/publicscience/argos.git
+venv_path: /var/env/argos
+repo_path: /var/www/argos
+db_user: argos_user

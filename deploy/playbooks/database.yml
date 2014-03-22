@@ -1,0 +1,25 @@
+- hosts: dbservers
+  sudo: yes
+  remote_user: '{{ remote_user }}'
+  vars_files:
+      - vars/common.yml
+  tasks:
+      - name: ensure apt cache is up to date
+        action: apt update_cache=yes
+
+      # Ansible requires pscyopg2 and libpq-dev for postgresql_user
+      - name: Install psycopg2 and libpq-dev
+        apt: pkg={{ item }} state=installed
+        with_items:
+            - python-psycopg2
+            - libpq-dev
+
+      - name: Install postgres
+        apt: pkg=postgresql state=installed
+
+      - name: Ensure postgres is running
+        service: name=postgresql enabled=yes state=started
+
+      - name: Create postgres user
+        postgresql_user: name={{ db_user }} role_attr_flags=CREATEDB,NOSUPERUSER
+        sudo_user: postgres

@@ -1,0 +1,48 @@
+- hosts: appservers
+  sudo: yes
+  remote_user: '{{ remote_user }}'
+  vars:
+      db_host: '{{ hostvars[groups.dbservers_internal[0]].ansible_eth0.ipv4.address }}'
+  vars_files:
+      - vars/common.yml
+  tasks:
+      - include: tasks/base.yml
+      - include: tasks/config.yml
+
+      - name: install nginx and uwsgi
+        apt: pkg={{ item }} state=installed
+        with_items:
+            - uwsgi
+            - nginx
+
+      - name: copy nginx config
+        template: src=../files/nginx.conf dest=/etc/nginx/sites-available/default
+        notify: restart nginx
+
+      - name: enable nginx config (symlink)
+        file: src=/etc/nginx/sites-available/default dest=/etc/nginx/sites-enabled/default state=link
+
+      - name: make uwsgi config directory
+        file: path=/opt/uwsgi/etc/uwsgi.d/ state=directory
+
+      - name: copy uwsgi fastrouter config
+        copy: src=../files/uwsgi/fastrouter dest=/opt/uwsgi/etc/uwsgi.d/fastrouter
+        notify: restart uwsgi
+
+      - name: copy uwsgi init.d script
+        copy: src=../files/uwsgi/init-script dest=/etc/init.d/uwsgi mode=755
+
+      - name: copy uwsgi vassal config
+        template: src=../files/uwsgi/vassal.ini dest=/opt/uwsgi/etc/uwsgi.d/vassal.ini
+
+      - name: ensure uwsgi is running
+        service: name=uwsgi enabled=yes state=started
+
+      - name: ensure nginx is running
+        service: name=nginx enabled=yes state=started
+
+  handlers:
+      - name: restart nginx
+        service: name=nginx state=restarted
+      - name: restart uwsgi
+        service: name=uwsgi state=restarted
