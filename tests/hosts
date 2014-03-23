@@ -1,3 +1,6 @@
+[image_instances]
+127.0.0.1:2222
+
 [appservers]
 127.0.0.1:2222
 

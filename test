@@ -11,6 +11,6 @@ then
 else
     cd tests/
     vagrant up
-    ansible-playbook -i hosts ../deploy/playbooks/$1.yml --private-key=~/.vagrant.d/insecure_private_key -vvvv
+    ansible-playbook -i hosts ../playbooks/$1.yml --private-key=~/.vagrant.d/insecure_private_key -vvvv
     vagrant destroy
 fi
