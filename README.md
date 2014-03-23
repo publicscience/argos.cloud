@@ -20,9 +20,9 @@ have the same name as the `key_name` you specify in
 `playbooks/group_vars/all.yml`. For example, if `key_name=foobar`, you
 must have your key at `keys/foobar.pem`.
 * Configure `playbooks/group_vars/all.yml` to your needs.
-* Configure `deploy/files/<env name>/app_config.py` to your needs (this contains your
+* Configure `playbooks/roles/app/templates/app_config.py` to your needs (this contains your
         application settings).
-* Configure `deploy/files/<env name>celery_config.py` to your needs (this contains your
+* Configure `playbooks/roles/app/templates/celery_config.py` to your needs (this contains your
         [Celery](http://www.celeryproject.org/) settings).
 
 You must also set the `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` environment variables.

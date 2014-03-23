@@ -6,5 +6,5 @@ id_rsa
 id_rsa.pub
 logger/logs/*.log
 .vagrant
-*config.py
+*_config.py
 all.yml
