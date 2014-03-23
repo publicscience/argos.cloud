@@ -1,13 +1,13 @@
 {
     "AWSTemplateFormatVersion" : "2010-09-09",
-    "Description": "Template for generating a knowledge (Fuseki + NER) instance. (this is still in progress, it needs to be in the property security group to allow app and worker instances to talk to it)",
+    "Description": "Template for generating a knowledge (Fuseki + NER) instance. Port 8080 is open for NER, port 3030 is open for Fuseki.",
 
     "Parameters": {
         "ImageId": {
             "Description": "The AMI ID of the base image to use.",
             "Type": "String"
         },
-        "InstanceName": {
+        "KnowledgeInstanceName": {
             "Description": "The name tag to apply to the instance.",
             "Type": "String"
         },
@@ -18,45 +18,59 @@
     },
 
     "Resources": {
-        "Ec2Instance": {
+        "KnowledgeInstance": {
             "Type": "AWS::EC2::Instance",
             "Properties": {
                 "ImageId": { "Ref": "ImageId" },
                 "Tags": [
-                    { "Key": "Name", "Value": { "Ref": "InstanceName" } }
+                    { "Key": "Name", "Value": { "Ref": "KnowledgeInstanceName" } }
                 ],
                 "KeyName":  { "Ref": "KeyName" },
-                "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ]
+                "SecurityGroups" : [ { "Ref" : "KnowledgeInstanceSecurityGroup" } ]
             }
         },
 
-        "InstanceSecurityGroup" : {
+        "KnowledgeInstanceSecurityGroup" : {
           "Type" : "AWS::EC2::SecurityGroup",
           "Properties" : {
-            "GroupDescription" : "Enable SSH access",
-            "SecurityGroupIngress" : [ {
-              "IpProtocol" : "tcp",
-              "FromPort" : "22",
-              "ToPort" : "22",
-              "CidrIp" : "0.0.0.0/0"
-            } ]
+            "GroupDescription" : "Enable SSH access and access to Stanford NER (8080) and Fuseki (3030)",
+            "SecurityGroupIngress" : [
+                {
+                    "IpProtocol" : "tcp",
+                    "FromPort" : "22",
+                    "ToPort" : "22",
+                    "CidrIp" : "0.0.0.0/0"
+                },
+                {
+                    "IpProtocol" : "tcp",
+                    "FromPort" : "8080",
+                    "ToPort" : "8080",
+                    "CidrIp" : "0.0.0.0/0"
+                },
+                {
+                    "IpProtocol" : "tcp",
+                    "FromPort" : "3030",
+                    "ToPort" : "3030",
+                    "CidrIp" : "0.0.0.0/0"
+                }
+            ]
           }
         }
 
     },
 
     "Outputs": {
-        "InstanceId": {
+        "KnowledgeInstanceId": {
             "Description": "InstanceId of the EC2 instance",
-            "Value": { "Ref": "Ec2Instance" }
+            "Value": { "Ref": "KnowledgeInstance" }
         },
-        "PublicIP": {
+        "KnowledgePublicIP": {
             "Description": "Public IP address of the EC2 instance",
-            "Value": { "Fn::GetAtt": [ "Ec2Instance", "PublicIp" ] }
+            "Value": { "Fn::GetAtt": [ "KnowledgeInstance", "PublicIp" ] }
         },
-        "PrivateIP": {
+        "KnowledgePrivateIP": {
             "Description": "Private IP address of the EC2 instance",
-            "Value": { "Fn::GetAtt": [ "Ec2Instance", "PrivateIp" ] }
+            "Value": { "Fn::GetAtt": [ "KnowledgeInstance", "PrivateIp" ] }
         }
     }
 }

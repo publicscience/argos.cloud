@@ -132,7 +132,7 @@
       }
     },
 
-    "CPUAlarmHigh": {
+    "DBCPUAlarmHigh": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
         "AlarmDescription": { "Fn::Join" : [ "", ["Alarm if ", { "Ref" : "DBName" }, " CPU > ", { "Fn::FindInMap" : [ "InstanceTypeMap", { "Ref" : "DBInstanceClass" }, "CPULimit" ]}, "% for 5 minutes" ]]},

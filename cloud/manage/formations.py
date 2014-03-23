@@ -89,7 +89,7 @@ def build_template(names):
                     merged.update(template[key])
         voltron[key] = merged
         if len(voltron[key]) != expected_items:
-            raise Exception('Merging didn\'t preserve all items, aborting.')
+            raise Exception('Merging didn\'t preserve all items for key {0}. There may be conflicting names, exiting!'.format(key))
 
     voltron['AWSTemplateFormatVersion'] = '2010-09-09'
     return json.dumps(voltron).encode('utf-8')

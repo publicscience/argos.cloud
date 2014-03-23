@@ -26,7 +26,7 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instan
         logger.info('Infrastructure for the environment [{0}] already exists.'.format(env))
         return
 
-    templates = ['bucket', 'app', 'database']
+    templates = ['bucket', 'app', 'database', 'knowledge']
     logger.info('Merging individual templates: {0}'.format(templates))
     template = manage.formations.build_template(templates)
 
@@ -34,6 +34,7 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instan
     init_script = open('templates/init.sh', 'r').read().encode('utf-8')
 
     logger.info('Creating the infrastructure...')
+    logger.info('You can see its progress (and debug issues more easily) by checking out [https://console.aws.amazon.com/cloudformation/]')
     conn.create_stack(
             name,
             template,
@@ -55,7 +56,12 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instan
                 ('DBAllocatedStorage', 50),                  # in GB
                 ('DBInstanceClass', db_instance_type),
                 ('EC2SecurityGroup', 'default'),    # for now, use the default sec group. should be creating one for the app group i think.
-                ('MultiAZ', 'true')
+                ('MultiAZ', 'true'),
+
+                # Knowledge
+                ('KnowledgeInstanceName', '{0}-knowledge'.format(name)),
+                ('KeyName', config.KEY_NAME),
+                ('ImageId', config.BASE_AMI)
             ]
     )
 
