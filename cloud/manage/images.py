@@ -7,9 +7,13 @@ the creation of images from them.
 """
 
 from boto.exception import EC2ResponseError
+
 from cloud import connect, command
-from cloud.manage import instances, formations, provision
-from subprocess import CalledProcessError
+from cloud.manage import formations, provision
+
+from subprocess import CalledProcessError, Popen
+from time import sleep
+import os
 
 import logging
 logger = logging.getLogger(__name__)
@@ -63,7 +67,7 @@ def create_image(name):
 
         # Wait until instance is ready.
         image = ec2.get_all_images([ami_id])[0]
-        instances.wait_until_ready(image)
+        wait_until_ready(image)
         logger.info('Created image with id {0}'.format(ami_id))
 
         # Clean up the image infrastructure.
@@ -107,19 +111,15 @@ def delete_image(name):
 def create_image_instance(name, base_ami_id, key_name):
     conn = connect.cf()
 
-    # Convert the name into a stack name AWS
-    # won't throw a fit over.
-    stack_name = name.replace('_', '-')
-
-    if formations.get_stack(stack_name) is not None:
+    if formations.get_stack(name) is not None:
         logger.info('Image instance already exists.')
         return
 
     image_template = open('formations/image.json', 'rb').read()
 
-    logger.info('Creating image instance...')
+    logger.info('Creating image instance ({0})...'.format(name))
     conn.create_stack(
-            stack_name,
+            name,
             image_template,
             parameters=[
                 ('ImageId', base_ami_id),
@@ -130,36 +130,39 @@ def create_image_instance(name, base_ami_id, key_name):
 
     logger.info('Waiting for image instance to launch...')
     try:
-        formations.wait_until_ready(stack_name)
+        formations.wait_until_ready(name)
         logger.info('Image instance has launched.')
     except formations.FormationError as e:
-        logger.info('There was an error creating the image instance: {0}'.format(e.message))
-        logger.info('If the image instance was rolled back, it is likely due to an error with the image instance template.')
+        logger.error('There was an error creating the image instance: {0}'.format(e.message))
+        logger.error('If the image instance was rolled back, it is likely due to an error with the image instance template.')
         logger.info('Cleaning up...')
-        delete_image_instance(stack_name)
+        delete_image_instance(name)
         raise Exception('Image instance creation failed.')
 
-    stack = formations.get_stack(stack_name)
+    stack = formations.get_stack(name)
     instance_ip = formations.get_output(stack, 'PublicIP')
-    inventory = provision.make_inventory([instance_ip], 'image_instances')
+    instance_host = formations.get_output(stack, 'PublicDNSName')
+    logger.info('Instance up at {0} ({1}).'.format(instance_host, instance_ip))
 
-    logger.info('Instance up at {0}.'.format(instance_ip))
+    logger.info('Waiting for SSH to become active...')
+    sleep(120)
 
     # Need to add the instance to known hosts.
     logger.info('Adding instance to known hosts...')
-    command.cmd(['ssh-keyscan', '-p', '22', '-H', instance_ip, '2>', '/dev/null', '>>', '$HOME/.ssh/known_hosts'])
+    known_hosts = open(os.path.expanduser('~/.ssh/known_hosts'), 'a')
+    devnull = open(os.devnull, 'w')
+    Popen(['ssh-keyscan', '-p', '22', instance_ip], stdout=known_hosts, stderr=devnull)
+    Popen(['ssh-keyscan', '-p', '22', instance_host], stdout=known_hosts, stderr=devnull)
+    known_hosts.close()
+    devnull.close()
 
-    logger.info('Waiting for SSH to become active...')
-    import time
-    time.sleep(60) # Wait for SSH. Replace this with polling the port.
-
-    logger.info('Configuring image instance at {0} (this may take awhile)...'.format(instance_ip))
+    logger.info('Configuring image instance at {0} (this may take awhile)...'.format(instance_host))
     try:
-        provision.provision(inventory, 'image', key_name)
+        provision.provision('argos', 'image', key_name) #replace argos with app name
     except CalledProcessError:
-        logger.info('There was an error provisioning the image instance. It is likely an error with the Ansible playbook, or perhaps the image instance\'s security group does not have port 22 open.')
+        logger.error('There was an error provisioning the image instance. It is likely an error with the Ansible playbook, or perhaps the image instance\'s security group does not have port 22 open.')
         logger.info('Cleaning up...')
-        delete_image_instance(stack_name)
+        delete_image_instance(name)
         raise Exception('Image instance creation failed.')
 
     logger.info('Image instance successfully created.')
@@ -167,17 +170,24 @@ def create_image_instance(name, base_ami_id, key_name):
 
 def delete_image_instance(name):
     conn = connect.cf()
-    stack_name = name.replace('_', '-')
 
-    stacks = [stack for stack in conn.describe_stacks() if stack.stack_name == stack_name]
+    stacks = [stack for stack in conn.describe_stacks() if stack.stack_name == name]
     if len(stacks) == 0:
         logger.info('Image instance is already deleted.')
         return
 
-    conn.delete_stack(stack_name)
+    conn.delete_stack(name)
 
     logger.info('Waiting for image instance to delete...')
-    formations.wait_until_terminated(stack_name)
+    formations.wait_until_terminated(name)
     logger.info('Image instance deleted.')
 
 
+def wait_until_ready(instance):
+    """
+    Wait until an instance is ready.
+    """
+    istatus = instance.update()
+    while istatus == 'pending':
+        sleep(10)
+        istatus = instance.update()

@@ -11,6 +11,6 @@ then
 else
     cd tests/
     vagrant up
-    ansible-playbook -i hosts ../playbooks/$1.yml --private-key=~/.vagrant.d/insecure_private_key -vvvv
+    ansible-playbook -i hosts ../playbooks/$1.yml --private-key=~/.vagrant.d/insecure_private_key -vvvv -e 'app_name=argos env_name=testing remote_user=vagrant'
     vagrant destroy
 fi

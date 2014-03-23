@@ -1,4 +1,5 @@
 # "Global" variables.
+# Keep this file for reference.
 
 git_repo: https://github.com/publicscience/argos.git
 venv_path: /var/env/argos
@@ -6,7 +7,6 @@ repo_path: /var/www/argos
 app_name: argos
 remote_user: ubuntu
 region: us-east-1
-image_name: argos_image
 base_ami: ami-7d317314
 db_user: argos_user
 db_pass: password
@@ -15,3 +15,10 @@ db_pass: password
 # be added to `keys/`,
 # e.g. `keys/<key_name>.pem`.
 key_name: argos_dummy
+
+admin_name: some admin
+admin_email: admin@mail.com
+
+aes_key: '123456789abcdefg123456789abcdefg' # must be 32 bytes
+aes_iv: '123456789abcdefg' # must be 16 bytes
+secret_key: 'some-secret-key'

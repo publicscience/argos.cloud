@@ -1,3 +1,6 @@
+- name: Install pycurl (needed by Ansible)
+  apt: pkg=python-pycurl state=installed
+
 - name: add ansible repository
   apt_repository: repo=ppa:rquillo/ansible
 

@@ -1,4 +1,4 @@
-- hosts: brokers
+- hosts: 'tag_Name_{{ app_name }}-{{ env_name }}-broker'
   sudo: yes
   remote_user: '{{ remote_user }}'
   roles:

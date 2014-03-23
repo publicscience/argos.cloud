@@ -3,13 +3,10 @@
     "Description": "Template for generating a RabbitMQ broker instance. (this is still in progress, it needs to be in the proper security group for the app and workers to talk to it)",
 
     "Parameters": {
-        "ImageId": {
-            "Description": "The AMI ID of the base image to use.",
-            "Type": "String"
-        },
-        "InstanceName": {
-            "Description": "The name tag to apply to the instance.",
-            "Type": "String"
+        "BrokerGroup": {
+            "Description": "The group tag to apply to the instance.",
+            "Type": "String",
+            "Default": "broker"
         },
         "KeyName": {
             "Description": "The key name to use.",
@@ -21,9 +18,16 @@
         "Ec2Instance": {
             "Type": "AWS::EC2::Instance",
             "Properties": {
-                "ImageId": { "Ref": "ImageId" },
+                "ImageId": { "Ref": "BaseImageId" },
                 "Tags": [
-                    { "Key": "Name", "Value": { "Ref": "InstanceName" } }
+                    { "Key": "Name", "Value": { "Fn::Join": [ "-", [
+                        { "Ref": "AppName" },
+                        { "Ref": "EnvironmentName" },
+                        { "Ref": "BrokerGroup" }
+                    ]]}},
+                    { "Key": "Group", "Value": { "Ref": "BrokerGroup" } },
+                    { "Key": "Env", "Value": { "Ref": "EnvironmentName" } },
+                    { "Key": "App", "Value": { "Ref": "AppName" } }
                 ],
                 "KeyName":  { "Ref": "KeyName" },
                 "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ]

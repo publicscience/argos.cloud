@@ -1,0 +1,20 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description": "Global parameters for the cloud stack. This is not standalone, it is merged with the other cloud stack templates.",
+
+  "Parameters" : {
+    "AppName" : {
+      "Description" : "The application name.",
+      "Type" : "String"
+    },
+    "EnvironmentName" : {
+      "Description" : "The environment name.",
+      "Type" : "String"
+    },
+    "BaseImageId": {
+        "Description": "The AMI ID of the base image to use.",
+        "Type": "String"
+    }
+  }
+}

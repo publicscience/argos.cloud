@@ -27,7 +27,7 @@
         region: '{{ region }}'
         count: 1
         state: present
-        key_name: '{{ key_name  }}'
+        key_name: '{{ key_name }}'
         instance_tags:
           Name: image_instance
       register: ec2
@@ -59,7 +59,7 @@
         module: ec2_ami
         instance_id: '{{ item }}'
         wait: yes
-        name: '{{ image_name }}'
+        name: '{{ app_name }}-image'
         region: '{{ region }}'
       register: instance
       with_items: ec2.instance_ids

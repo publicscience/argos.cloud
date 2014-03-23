@@ -1,4 +1,4 @@
-- hosts: dbservers
+- hosts: 'tag_Name_{{ app_name }}-{{ env_name }}-database'
   sudo: yes
   remote_user: '{{ remote_user }}'
   vars_files:

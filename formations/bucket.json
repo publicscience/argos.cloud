@@ -2,11 +2,29 @@
     "AWSTemplateFormatVersion" : "2010-09-09",
     "Description": "Create an S3 bucket.",
 
+    "Parameters": {
+        "BucketGroup": {
+            "Description": "The group tag to apply to the instance.",
+            "Type": "String",
+            "Default": "bucket"
+        }
+    },
+
     "Resources": {
         "S3Bucket": {
             "Type": "AWS::S3::Bucket",
             "Properties": {
-                "AccessControl": "PublicRead"
+                "AccessControl": "PublicRead",
+                "Tags": [
+                    { "Key": "Name", "Value": { "Fn::Join": [ "-", [
+                        { "Ref": "AppName" },
+                        { "Ref": "EnvironmentName" },
+                        { "Ref": "BucketGroup" }
+                    ]]}},
+                    { "Key": "Group", "Value": { "Ref": "BucketGroup" } },
+                    { "Key": "Env", "Value": { "Ref": "EnvironmentName" } },
+                    { "Key": "App", "Value": { "Ref": "AppName" } }
+                ],
             },
             "DeletionPolicy": "Retain"
         }

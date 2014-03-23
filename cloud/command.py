@@ -10,69 +10,6 @@ import subprocess, time
 import logging
 logger = logging.getLogger(__name__)
 
-
-def ssh(cmd, host=None, user=None, key=None, log=False):
-    """
-    Convenience method for SSHing.
-
-    Args:
-        | cmd (list)    -- a list of the command parameters.
-        | host (str)    -- the ip or hostname to connect to.
-        | user (str)    -- the user to connect as.
-        | key (str)     -- path to the key for authenticating.
-    """
-    ssh = [
-        'ssh',
-        '-t',
-        '-i',
-        key,
-        '-o',
-        'StrictHostKeyChecking=no',
-        '{0}@{1}'.format(user, host)
-    ]
-    return _call_remote_process(ssh + cmd, log=log)
-
-
-def scp(local, remote, host=None, user=None, key=None, log=False):
-    """
-    Convenience method for SCPing.
-
-    Args:
-        | local (str)   -- path to local file or directory to copy.
-        | remote (str)  -- path to remote file or directory to copy to.
-        | host (str)    -- the ip or hostname to connect to.
-        | user (str)    -- the user to connect as.
-        | key (str)     -- path to the key for authenticating.
-    """
-    scp = [
-            'scp',
-            '-r',
-            '-o',
-            'StrictHostKeyChecking=no',
-            '-i',
-            key,
-            local,
-            '{0}@{1}:{2}'.format(user, host, remote)
-    ]
-    return _call_remote_process(scp, log=log)
-
-
-def _call_remote_process(cmd, log=False):
-    """
-    Calls a remote process and retries
-    a few times before giving up.
-    """
-    # Get output of command to check for errors.
-    out = cmd(cmd, log=log)
-
-    # Check if we couldn't connect, and try again.
-    tries = 0
-    while b'Connection refused' in out and tries < 20:
-        time.sleep(2)
-        out = cmd(cmd, log=log)
-    return out
-
-
 def cmd(cmd, log=False):
     """
     Convenience method for calling a process and getting its results.

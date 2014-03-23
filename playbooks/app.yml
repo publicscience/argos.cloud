@@ -1,8 +1,12 @@
-- hosts: appservers
+- hosts: 'tag_Name_{{ app_name }}-{{ env_name }}-app'
   sudo: yes
   remote_user: '{{ remote_user }}'
   vars:
-      db_host: '{{ hostvars[groups.dbservers_internal[0]].ansible_eth0.ipv4.address }}'
+      db_host: '{{ hostvars[groups.tag_Name_{{ app_name }}-{{ env_name }}-database[0]].ec2_private_dns_name }}'
+      knowledge_host: '{{ hostvars[groups.tag_Name_{{ app_name }}-{{ env_name }}-knowledge[0]].ec2_private_dns_name }}'
+      broker_host: '{{ hostvars[groups.tag_Name_{{ app_name }}-{{ env_name }}-broker[0]].ec2_private_dns_name }}'
+      # need to actually get this value
+      s3_bucket_name: '{{ hostvars[groups.tag_Name_{{ app_name }}-{{ env_name }}-knowledge[0]].ec2_private_dns_name }}'
   roles:
       - common
       - app

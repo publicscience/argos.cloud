@@ -1,4 +1,4 @@
-- hosts: image_instances
+- hosts: 'tag_Name_{{ app_name }}-image'
   sudo: yes
   remote_user: '{{ remote_user }}'
   roles:

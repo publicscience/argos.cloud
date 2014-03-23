@@ -36,6 +36,12 @@
     "ImageAMI": {
         "Description": "The AMI ID of the base image for the group's instances",
         "Type": "String"
+    },
+
+    "AppGroup": {
+        "Description": "The group tag to apply to the instance.",
+        "Type": "String",
+        "Default": "app"
     }
   },
 
@@ -47,7 +53,32 @@
         "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
         "MinSize" : { "Ref": "MinSize" },
         "MaxSize" : { "Ref": "MaxSize" },
-        "LoadBalancerNames" : [ { "Ref" : "ElasticLoadBalancer" } ]
+        "LoadBalancerNames" : [ { "Ref" : "ElasticLoadBalancer" } ],
+        "Tags": [
+            { "Key": "Name",
+              "Value": { "Fn::Join": [ "-", [
+                  { "Ref": "AppName" },
+                  { "Ref": "EnvironmentName" },
+                  { "Ref": "AppGroup" }
+              ]]},
+              "PropagateAtLaunch": "true"
+            },
+            {
+              "Key": "Group",
+              "Value": { "Ref": "AppGroup" },
+              "PropagateAtLaunch": "true"
+            },
+            {
+              "Key": "Env",
+              "Value": { "Ref": "EnvironmentName" },
+              "PropagateAtLaunch": "true"
+            },
+            {
+              "Key": "App",
+              "Value": { "Ref": "AppName" },
+              "PropagateAtLaunch": "true"
+            }
+        ]
       }
     },
 

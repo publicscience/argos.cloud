@@ -4,11 +4,17 @@
 - name: download fuseki
   get_url: url={{ fuseki_url }} dest=/srv/fuseki.tar.gz
 
+- name: create jena directory
+  file: path=/srv/jena state=directory
+
+- name: create fuseki directory
+  file: path=/srv/fuseki state=directory
+
 - name: extract jena
-  command: tar -xzvf jena.tar.gz && mv apache-jena* jena chdir=/srv/
+  command: tar -xzvf jena.tar.gz -C /srv/jena --strip 1 chdir=/srv/
 
 - name: extract fuseki
-  command: tar -xzvf fuseki.tar.gz && mv jena-fuseki* fuseki chdir=/srv/
+  command: tar -xzvf fuseki.tar.gz -C /srv/fuseki --strip 1 chdir=/srv/
 
 - name: make knowledge directory
   file: path=/srv/knowledge state=directory
@@ -16,11 +22,14 @@
 - name: copy fuseki init.d script
   copy: src=fuseki-init dest=/etc/init.d/fuseki mode=755
 
-- name: download dbpedia data
-  # TO DO: add this
+#- name: download dbpedia data
+# TO DO: add this
 
 - name: ensure fuseki is running
   service: name=fuseki enabled=yes state=started
+
+- name: ensure apt cache is up to date
+  apt: update_cache=yes
 
 - name: install ner dependencies
   apt: pkg={{ item }} state=installed
@@ -32,10 +41,10 @@
   get_url: url={{ ner_url }} dest=/srv/ner.zip
 
 - name: extract ner
-  command: unzip -o ner.zip && mv stanford-ner* ner chdir=/srv/
+  command: unzip -o ner.zip -d /srv/ner chdir=/srv/
 
 - name: copy ner init.d script
   copy: src=ner-init dest=/etc/init.d/ner mode=755
 
 - name: ensure ner is running
-  service: name=fuseki enabled=yes state=started
+  service: name=ner enabled=yes state=started

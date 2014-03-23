@@ -6,32 +6,24 @@ Manages provisioning of instances.
 """
 
 from cloud.command import cmd
+import yaml
 
-def provision(hosts_path, playbook, key_name):
+def provision(app, playbook, key_name, env=None):
     """
     Calls an Ansible playbook to provision
     remote instances.
+
+    This uses the EC2 dynamic inventory script
+    to get all EC2 hosts.
     """
+
+    vars = ['app_name={0}'.format(app)]
+    if env is not None:
+        vars.append('env_name={0}'.format(env))
 
     cmd(['ansible-playbook',
-        '-i', hosts_path,
-        'playbooks/{0}.yml'.format(playbook),
-        '--private-key=keys/{0}.pem'.format(key_name), '-vvvv'])
-
-def make_inventory(hosts, group):
-    """
-    Creates a temporary Ansible hosts
-    inventory.
-    """
-    filename = '/tmp/hosts_{0}'.format(group)
-
-    inventory = open(filename, 'w')
-    inventory.write(
-            '[{group}]\n{hosts}'.format(
-                group=group,
-                hosts='\n'.join(hosts)
-            )
-    )
-    inventory.close()
-
-    return filename
+        '-i', 'playbooks/hosts/ec2.py',                 # Use the EC2 dynamic inventory script.
+        'playbooks/{0}.yml'.format(playbook),           # Load the playbook.
+        '--private-key=keys/{0}.pem'.format(key_name),  # Load the proper key.
+        '-e', '"{vars}"'.format(vars=' '.join(vars)),   # Set the necessary variables.
+        '-vvvv'])                                       # Verbose output for debugging.

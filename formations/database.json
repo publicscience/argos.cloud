@@ -57,6 +57,11 @@
       "Type": "String",
       "AllowedValues" : [ "true", "false" ],
       "ConstraintDescription" : "must be either true or false."
+    },
+    "DatabaseGroup": {
+        "Description": "The group tag to apply to the instance.",
+        "Type": "String",
+        "Default": "database"
     }
   },
 
@@ -114,6 +119,16 @@
         "MasterUsername" : { "Ref" : "DBUser" },
         "MasterUserPassword" : { "Ref" : "DBPassword" },
         "MultiAZ" : { "Ref" : "MultiAZ" }
+        "Tags": [
+            { "Key": "Name", "Value": { "Fn::Join": [ "-", [
+                { "Ref": "AppName" },
+                { "Ref": "EnvironmentName" },
+                { "Ref": "DatabaseGroup" }
+            ]]}},
+            { "Key": "Group", "Value": { "Ref": "DatabaseGroup" }},
+            { "Key": "Env", "Value": { "Ref": "EnvironmentName" } },
+            { "Key": "App", "Value": { "Ref": "AppName" } }
+        ]
       },
       "DeletionPolicy" : "Snapshot"
     },

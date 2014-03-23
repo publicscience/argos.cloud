@@ -1,26 +1,20 @@
-[image_instances]
+# Mock out EC2 host groups.
+# Name: <app_name>-<env_name>-<group>
+
+[tag_Name_argos-image]
 127.0.0.1:2222
 
-[appservers]
+[tag_Name_argos-testing-knowledge]
 127.0.0.1:2222
 
-[dbservers]
+[tag_Name_argos-testing-app]
 127.0.0.1:2222
 
-[brokers]
+[tag_Name_argos-testing-database]
 127.0.0.1:2222
 
-[workers]
+[tag_Name_argos-testing-broker]
 127.0.0.1:2222
 
-[dbservers_internal]
+[tag_Name_argos-testing-worker]
 127.0.0.1:2222
-
-[vagrant:children]
-appservers
-dbservers
-brokers
-workers
-
-[vagrant:vars]
-remote_user=vagrant

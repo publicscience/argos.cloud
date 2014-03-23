@@ -22,6 +22,7 @@
             "Type": "AWS::EC2::Instance",
             "Properties": {
                 "ImageId": { "Ref": "ImageId" },
+                "InstanceType": "m3.xlarge",
                 "Tags": [
                     { "Key": "Name", "Value": { "Ref": "InstanceName" } }
                 ],
@@ -53,6 +54,14 @@
         "PublicIP": {
             "Description": "Public IP address of the EC2 instance",
             "Value": { "Fn::GetAtt": [ "Ec2Instance", "PublicIp" ] }
+        },
+        "PublicDNSName": {
+            "Description": "Public DNS name of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "Ec2Instance", "PublicDnsName" ] }
+        },
+        "PrivateDNSName": {
+            "Description": "Private DNS name of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "Ec2Instance", "PrivateDnsName" ] }
         },
         "PrivateIP": {
             "Description": "Private IP address of the EC2 instance",

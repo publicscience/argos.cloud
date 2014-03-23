@@ -15,6 +15,7 @@ i.e. 'git_repo' becomes `config.GIT_REPO`.
 import yaml
 import os
 
+# Load from Ansible's "global" vars.
 c = yaml.load(open('playbooks/group_vars/all.yml'))
 
 namespace = globals()

@@ -1,4 +1,4 @@
-- hosts: knowledgeservers
+- hosts: 'tag_Name_{{ app_name }}-{{ env_name }}-knowledge'
   sudo: yes
   remote_user: '{{ remote_user }}'
   roles:
