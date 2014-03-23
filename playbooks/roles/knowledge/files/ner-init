@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+# ner:          Startup script for Stanford NER.
+#
+# description:      Startup script for Stanford NER.
+
+NER_HOME=/srv/ner
+export NER_HOME
+
+start() {
+        echo "Starting Stanford NER..."
+        cd $NER_HOME
+        java -mx1000m -cp stanford-ner.jar edu.stanford.nlp.ie.NERServer -loadClassifier classifiers/english.conll.4class.distsim.crf.ser.gz -port 8080 -outputFormat inlineXML 2>&1 &
+        echo $! &> /tmp/ner.pid
+        sleep 2
+        echo "done."
+}
+
+stop() {
+        echo "Stopping Stanford NER..."
+        cat /tmp/ner.pid | xargs -i kill -9 {}
+        echo "done"
+}
+
+# See how we were called.
+case "$1" in
+        start)
+                start
+                ;;
+        stop)
+                stop
+                ;;
+        restart)
+                stop
+                start
+                ;;
+        *)
+                echo $"Usage: ner {start|stop|restart}"
+                exit
+esac
+

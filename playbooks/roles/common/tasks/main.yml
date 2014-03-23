@@ -11,9 +11,8 @@
       - git
       - python3.3
       - python3-pip
-      - unzip # for the NER server and for NLTK data.
+      - unzip # for NLTK data.
       - bzr # For getting the latest python-dateutil.
-      - openjdk-7-jre # for the NER server.
       - postgresql-server-dev-9.1 # For psycopg.
 
 - name: Clone git repository

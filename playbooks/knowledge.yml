@@ -1,0 +1,5 @@
+- hosts: knowledgeservers
+  sudo: yes
+  remote_user: '{{ remote_user }}'
+  roles:
+      - knowledge
