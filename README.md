@@ -28,8 +28,8 @@ must have your key at `keys/foobar.pem`.
 You must also set the `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` environment variables.
 
 *Optional*
-* Configure other files in `deploy/files/` as needed.
-* Configure provisioning variables in `deploy/playbooks/vars/` as
+* Configure other playbook files (`playbooks/roles/*/files/`)
+* Configure provisioning variables in `playbooks/roles/*/vars/` as
 needed.
 
 
@@ -75,7 +75,17 @@ If the needs for the Argos application change, for the most part you
 won't need to modify anything in the `cloud/` directory (unless more
 comprehensive infrastructural changes are necessary). If its a matter of
 a few additional packages, for example, you should only need to modify
-the playbooks in `deploy/`, or configuration options in `config.py`.
+the playbooks in `playbooks/`, or global configuration options in
+`playbooks/group_vars/all.yml`.
+
+If you need to change infrastructural resources, look in `formations/`.
+Note that all the formation templates except for `formations/image.json`
+are merged into a single mega-template, and because of these you should
+take care not to have conflicting resource logical ids (i.e. don't call
+a resource `Ec2Instance` in multiple templates, better to be specific,
+such as `KnowledgeEc2Instance`, and `BrokerEc2Instance`). The upside to
+this is that you can refer to variables/resources/parameters/etc in
+the other templates.
 
 ## About
 The application infrastructure runs on Amazon Web Services.
@@ -85,8 +95,11 @@ It consists of:
 * a broker server (manages distributed tasks) [currently disabled]
 * application servers (in an autoscaling group behind a load balancer)
 * worker servers (in an autoscaping group) [not yet implemented]
+* a knowledge server (running Apache Fuseki and Stanford NER)
 
-Server configurations and provisioning is handled by
+Infrastructure creation is handled by AWS's CloudFormation.
+
+Server configurations is handled by
 [Ansible](http://www.ansible.com/).
 
 ### Commissioning
@@ -116,7 +129,7 @@ hosts file keeps track of those for filling in configuration files.
 
 ### Deploying
 The deploying process works like so:
-* The environment hosts file (i.e. `deploy/hosts/hosts_<env name>`) is
+* The environment hosts file (i.e. `playbooks/hosts_<env name>`) is
 updated by finding matching instances on AWS (using their name tags).
 * Ansible runs playbooks on these hosts and keeps
 everything up to date.
