@@ -1,21 +1,15 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
 
-  "Description": "Create a load balanced autoscaling group where the instances are locked down to only accept traffic from the load balancer. The site is available on port 80, however, the instances can be configured to listen on any port (8888 by default).",
+  "Description": "Create a multi availability zone auto-scaled worker using spot instances.",
 
   "Parameters" : {
     "InstanceType" : {
-      "Description" : "WebServer EC2 instance type",
+      "Description" : "Worker EC2 instance type",
       "Type" : "String",
       "Default" : "m1.small",
       "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m2.4xlarge","m3.xlarge","m3.2xlarge","c1.medium","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge"],
       "ConstraintDescription" : "must be a valid EC2 instance type."
-    },
-
-    "InstancePort" : {
-      "Description" : "TCP/IP port of the web server",
-      "Type" : "String",
-      "Default" : "8888"
     },
 
     "MinSize": {
@@ -36,79 +30,63 @@
     "ImageAMI": {
         "Description": "The AMI ID of the base image for the group's instances",
         "Type": "String"
+    },
+
+    "SSHLocation" : {
+      "Description" : " The IP address range that can be used to SSH to the EC2 instances",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "0.0.0.0/0",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
     }
   },
 
   "Resources" : {
-    "WebServerGroup" : {
+    "WorkerGroup" : {
       "Type" : "AWS::AutoScaling::AutoScalingGroup",
       "Properties" : {
         "AvailabilityZones" : { "Fn::GetAZs" : "" },
         "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
         "MinSize" : { "Ref": "MinSize" },
-        "MaxSize" : { "Ref": "MaxSize" },
-        "LoadBalancerNames" : [ { "Ref" : "ElasticLoadBalancer" } ]
+        "MaxSize" : { "Ref": "MaxSize" }
       }
     },
 
     "LaunchConfig" : {
       "Type" : "AWS::AutoScaling::LaunchConfiguration",
       "Properties" : {
+        "SpotPrice" : "0.05",
         "ImageId" : { "Ref" : "ImageAMI" },
-        "UserData" : { "Fn::Base64" : { "Ref" : "InstancePort" }},
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
         "InstanceType" : { "Ref" : "InstanceType" }
-      }
-    },
-
-    "ElasticLoadBalancer" : {
-      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
-      "Properties" : {
-        "AvailabilityZones" : { "Fn::GetAZs" : "" },
-        "Listeners" : [ {
-          "LoadBalancerPort" : "80",
-          "InstancePort" : { "Ref" : "InstancePort" },
-          "Protocol" : "HTTP"
-        } ],
-        "HealthCheck" : {
-          "Target" : { "Fn::Join" : [ "", ["HTTP:", { "Ref" : "InstancePort" }, "/"]]},
-          "HealthyThreshold" : "3",
-          "UnhealthyThreshold" : "5",
-          "Interval" : "30",
-          "Timeout" : "5"
-        }
       }
     },
 
     "InstanceSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
-        "GroupDescription" : "Enable SSH access and HTTP access on the inbound port",
-        "SecurityGroupIngress" : [ {
-          "IpProtocol" : "tcp",
-          "FromPort" : { "Ref" : "InstancePort" },
-          "ToPort" : { "Ref" : "InstancePort" },
-          "SourceSecurityGroupOwnerId" : {"Fn::GetAtt" : ["ElasticLoadBalancer", "SourceSecurityGroup.OwnerAlias"]},
-          "SourceSecurityGroupName" : {"Fn::GetAtt" : ["ElasticLoadBalancer", "SourceSecurityGroup.GroupName"]}
-        } ]
+        "GroupDescription" : "Enable SSH access",
+        "SecurityGroupIngress" : [ {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : { "Ref" : "SSHLocation"}}]
       }
     },
 
-    "WebServerScaleUpPolicy" : {
+    "WorkerScaleUpPolicy" : {
       "Type" : "AWS::AutoScaling::ScalingPolicy",
       "Properties" : {
         "AdjustmentType" : "ChangeInCapacity",
-        "AutoScalingGroupName" : { "Ref" : "WebServerGroup" },
+        "AutoScalingGroupName" : { "Ref" : "WorkerGroup" },
         "Cooldown" : "60",
         "ScalingAdjustment" : "1"
       }
     },
 
-    "WebServerScaleDownPolicy" : {
+    "WorkerScaleDownPolicy" : {
       "Type" : "AWS::AutoScaling::ScalingPolicy",
       "Properties" : {
         "AdjustmentType" : "ChangeInCapacity",
-        "AutoScalingGroupName" : { "Ref" : "WebServerGroup" },
+        "AutoScalingGroupName" : { "Ref" : "WorkerGroup" },
         "Cooldown" : "60",
         "ScalingAdjustment" : "-1"
       }
@@ -124,11 +102,11 @@
         "Period": "300",
         "EvaluationPeriods": "2",
         "Threshold": "90",
-        "AlarmActions": [ { "Ref": "WebServerScaleUpPolicy" } ],
+        "AlarmActions": [ { "Ref": "WorkerScaleUpPolicy" } ],
         "Dimensions": [
           {
             "Name": "AutoScalingGroupName",
-            "Value": { "Ref": "WebServerGroup" }
+            "Value": { "Ref": "WorkerGroup" }
           }
         ],
         "ComparisonOperator": "GreaterThanThreshold"
@@ -145,11 +123,11 @@
         "Period": "300",
         "EvaluationPeriods": "2",
         "Threshold": "70",
-        "AlarmActions": [ { "Ref": "WebServerScaleDownPolicy" } ],
+        "AlarmActions": [ { "Ref": "WorkerScaleDownPolicy" } ],
         "Dimensions": [
           {
             "Name": "AutoScalingGroupName",
-            "Value": { "Ref": "WebServerGroup" }
+            "Value": { "Ref": "WorkerGroup" }
           }
         ],
         "ComparisonOperator": "LessThanThreshold"
@@ -158,9 +136,5 @@
   },
 
   "Outputs" : {
-    "ElasticLoadBalancerURL" : {
-      "Description" : "URL of the website",
-      "Value" :  { "Fn::Join" : [ "", [ "http://", { "Fn::GetAtt" : [ "ElasticLoadBalancer", "DNSName" ]}]]}
-    }
   }
 }
