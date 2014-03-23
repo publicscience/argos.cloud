@@ -23,7 +23,7 @@ CELERY_MAX_CACHED_RESULTS = 1
 # Send emails on errors
 CELERY_SEND_TASK_ERROR_EMAILS = True
 ADMINS = (
-    ('Winston Churchill', 'admin@mail.com')
+    ('{{ admin_name }}', '{{ admin_email }}')
 )
 SERVER_EMAIL = 'bot@gmail.com'
 EMAIL_HOST = 'smtp.gmail.com'
