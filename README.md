@@ -24,8 +24,14 @@ must have your key at `keys/foobar.pem`.
         application settings).
 * Configure `playbooks/roles/app/templates/celery_config.py` to your needs (this contains your
         [Celery](http://www.celeryproject.org/) settings).
+* If you don't already have one, create a Boto config file at `~/.boto` with your AWS access credentials, e.g:
 
-You must also set the `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` environment variables.
+```
+[Credentials]
+aws_access_key_id = YOURACCESSKEY
+aws_secret_access_key = YOURSECRETKEY
+```
+
 
 *Optional*
 * Configure other playbook files (`playbooks/roles/*/files/`)

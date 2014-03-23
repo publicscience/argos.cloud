@@ -25,7 +25,3 @@ for (k, v) in c.items():
         namespace[k] = v.format(**globals())
     else:
         namespace[k] = v
-
-# Load AWS keys from env vars.
-AWS_ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY')
-AWS_SECRET_KEY = os.environ.get('AWS_SECRET_KEY')
