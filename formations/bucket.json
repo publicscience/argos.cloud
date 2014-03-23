@@ -24,7 +24,7 @@
                     { "Key": "Group", "Value": { "Ref": "BucketGroup" } },
                     { "Key": "Env", "Value": { "Ref": "EnvironmentName" } },
                     { "Key": "App", "Value": { "Ref": "AppName" } }
-                ],
+                ]
             },
             "DeletionPolicy": "Retain"
         }

@@ -44,11 +44,8 @@
       - python-dev
       - lib32z1-dev
 
-- name: Create virtualenv
-  command: virtualenv-3.3 {{ venv_path }} --no-site-packages
-
-- name: Install dependencies (app)
-  pip: requirements={{ repo_path }}/requirements.txt virtualenv={{ venv_path }}
+- name: Create virtualenv and install dependencies (app)
+  pip: requirements={{ repo_path }}/requirements.txt virtualenv={{ venv_path }} virtualenv_command=virtualenv-3.3 virtualenv_site_packages=no
 
 - name: Download NLTK data
   copy: src=nltk_data.tar.gz dest=/usr/share/nltk_data.tar.gz

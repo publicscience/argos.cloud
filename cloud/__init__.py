@@ -21,6 +21,7 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instan
         # CREATE if it doesnt exist
         logger.info('Existing app image wasn\'t found, creating one...')
         manage.images.create_image_instance(img_name, config.BASE_AMI, config.KEY_NAME)
+        manage.images.configure_image_instance(img_name, app, config.KEY_NAME)
         app_ami_id = manage.images.create_image(img_name)
 
     if manage.formations.get_stack(stack_name) is not None:
@@ -56,7 +57,7 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instan
                 ('ImageAMI', app_ami_id),
 
                 # Database
-                ('DBName', stack_name.replace('-', '_')), # dashes must be underscore for psql
+                ('DBName', config.DB_NAME), # dashes must be underscore for psql
                 ('DBUser', config.DB_USER),
                 ('DBPassword', config.DB_PASS),
                 ('DBAllocatedStorage', 50),                  # in GB

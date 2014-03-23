@@ -8,6 +8,9 @@ Manages CloudFormation stacks.
 import time, json
 from cloud import connect
 
+import logging
+logger = logging.getLogger(__name__)
+
 class FormationError(Exception):
     def __init__(self, message):
         self.message = message
@@ -75,7 +78,11 @@ def build_template(names):
     keys = ['Parameters', 'Resources', 'Outputs', 'Mappings']
 
     # Load all the templates.
-    templates = [json.load(open('formations/{0}.json'.format(name))) for name in names]
+    try:
+        templates = [json.load(open('formations/{0}.json'.format(name))) for name in names]
+    except ValueError as e:
+        logger.error('Error with template: {0}'.format(name))
+        raise e
 
     for key in keys:
         merged = {}

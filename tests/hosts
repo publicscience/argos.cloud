@@ -5,16 +5,16 @@
 127.0.0.1:2222
 
 [tag_Name_argos-testing-knowledge]
-127.0.0.1:2222
+127.0.0.1:2222 ec2_private_dns_name=foo.aws.com
 
 [tag_Name_argos-testing-app]
-127.0.0.1:2222
+127.0.0.1:2222 ec2_private_dns_name=foo.aws.com
 
 [tag_Name_argos-testing-database]
-127.0.0.1:2222
+127.0.0.1:2222 ec2_private_dns_name=foo.aws.com
 
 [tag_Name_argos-testing-broker]
-127.0.0.1:2222
+127.0.0.1:2222 ec2_private_dns_name=foo.aws.com
 
 [tag_Name_argos-testing-worker]
-127.0.0.1:2222
+127.0.0.1:2222 ec2_private_dns_name=foo.aws.com

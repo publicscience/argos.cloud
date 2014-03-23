@@ -156,17 +156,16 @@ def create_image_instance(name, base_ami_id, key_name):
     known_hosts.close()
     devnull.close()
 
-    logger.info('Configuring image instance at {0} (this may take awhile)...'.format(instance_host))
-    try:
-        provision.provision('argos', 'image', key_name) #replace argos with app name
-    except CalledProcessError:
-        logger.error('There was an error provisioning the image instance. It is likely an error with the Ansible playbook, or perhaps the image instance\'s security group does not have port 22 open.')
-        logger.info('Cleaning up...')
-        delete_image_instance(name)
-        raise Exception('Image instance creation failed.')
-
     logger.info('Image instance successfully created.')
 
+def configure_image_instance(name, app, key_name):
+    logger.info('Configuring image instance {0} (this may take awhile)...'.format(name))
+    try:
+        provision.provision(app, 'image', key_name)
+    except CalledProcessError:
+        logger.error('There was an error provisioning the image instance. It is likely an error with the Ansible playbook, or perhaps the image instance\'s security group does not have port 22 open, or perhaps an image instance doesn\'t exist.')
+        logger.error('The image instance will be preserved so that you can re-run this method to retry configuring.')
+        raise Exception('Image instance configuring failed.')
 
 def delete_image_instance(name):
     conn = connect.cf()

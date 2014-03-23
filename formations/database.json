@@ -118,7 +118,7 @@
         "DBSecurityGroups": [ { "Ref": "DBSecurityGroup" } ],
         "MasterUsername" : { "Ref" : "DBUser" },
         "MasterUserPassword" : { "Ref" : "DBPassword" },
-        "MultiAZ" : { "Ref" : "MultiAZ" }
+        "MultiAZ" : { "Ref" : "MultiAZ" },
         "Tags": [
             { "Key": "Name", "Value": { "Fn::Join": [ "-", [
                 { "Ref": "AppName" },
