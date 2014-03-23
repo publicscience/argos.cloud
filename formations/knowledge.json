@@ -1,0 +1,62 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description": "Template for generating a knowledge (Fuseki + NER) instance. (this is still in progress, it needs to be in the property security group to allow app and worker instances to talk to it)",
+
+    "Parameters": {
+        "ImageId": {
+            "Description": "The AMI ID of the base image to use.",
+            "Type": "String"
+        },
+        "InstanceName": {
+            "Description": "The name tag to apply to the instance.",
+            "Type": "String"
+        },
+        "KeyName": {
+            "Description": "The key name to use.",
+            "Type": "String"
+        }
+    },
+
+    "Resources": {
+        "Ec2Instance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "ImageId": { "Ref": "ImageId" },
+                "Tags": [
+                    { "Key": "Name", "Value": { "Ref": "InstanceName" } }
+                ],
+                "KeyName":  { "Ref": "KeyName" },
+                "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ]
+            }
+        },
+
+        "InstanceSecurityGroup" : {
+          "Type" : "AWS::EC2::SecurityGroup",
+          "Properties" : {
+            "GroupDescription" : "Enable SSH access",
+            "SecurityGroupIngress" : [ {
+              "IpProtocol" : "tcp",
+              "FromPort" : "22",
+              "ToPort" : "22",
+              "CidrIp" : "0.0.0.0/0"
+            } ]
+          }
+        }
+
+    },
+
+    "Outputs": {
+        "InstanceId": {
+            "Description": "InstanceId of the EC2 instance",
+            "Value": { "Ref": "Ec2Instance" }
+        },
+        "PublicIP": {
+            "Description": "Public IP address of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "Ec2Instance", "PublicIp" ] }
+        },
+        "PrivateIP": {
+            "Description": "Private IP address of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "Ec2Instance", "PrivateIp" ] }
+        }
+    }
+}
