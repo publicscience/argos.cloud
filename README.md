@@ -98,10 +98,10 @@ The application infrastructure runs on Amazon Web Services.
 
 It consists of:
 * a database server (AWS RDS)
-* a broker server (manages distributed tasks) [currently disabled]
 * application servers (in an autoscaling group behind a load balancer)
-* worker servers (in an autoscaping group) [not yet implemented]
 * a knowledge server (running Apache Fuseki and Stanford NER)
+* a broker server (manages distributed tasks) [currently disabled]
+* worker servers (in an autoscaping group) [not yet implemented]
 
 Infrastructure creation is handled by AWS's CloudFormation in the `cloud` module.
 
@@ -118,10 +118,10 @@ and then Ansible can  use these tags to locate the resources and get
 their hostnames/IPs.
 
 Every resource is tagged with the following:
-* Name: <app>-<env>-<group>
-* Group: <group>
-* Env: <env>
-* App: <app>
+* Name: `<app>-<env>-<group>`
+* Group: `<group>`
+* Env: `<env>`
+* App: `<app>`
 
 With the exception of the image instance, which is tagged as just `Name: <app>-image`.
 The application image is environment-agnostic (no environment-specific data is baked into it) so it can be reused across environments.
