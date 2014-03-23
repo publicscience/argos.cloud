@@ -1,0 +1,28 @@
+# Necessary for Ansible's apt_repository
+- name: Install apt_repository dependencies
+  apt: pkg={{ item }} state=installed
+  with_items:
+    - python-pycurl
+    - python-apt
+
+- name: Add RabbitMQ apt cache
+  apt_repository: repo='deb http://www.rabbitmq.com/debian testing main' state=present
+
+- name: Add RabbitMQ signing key
+  apt_key: url=http://www.rabbitmq.com/rabbitmq-signing-key-public.asc state=present
+
+- name: Install RabbitMQ
+  apt: pkg=rabbitmq-server state=installed force=yes
+
+- name: Ensure RabbitMQ is running
+  service: name=rabbitmq-server enabled=yes state=started
+
+- name: Install Redis
+  apt: pkg=redis-server state=installed
+
+- name: Copy Redis config
+  copy: src=redis.conf dest=/etc/redis/redis.conf
+  #notify: restart redis # restart redis if config has changed.
+
+- name: Ensure Redis is running
+  service: name=redis-server enabled=yes state=started

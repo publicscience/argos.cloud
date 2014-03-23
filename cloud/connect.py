@@ -3,25 +3,20 @@ Connect
 ==============
 
 Connect to cloud services.
+
+Note:
+The AWS access key and secret key are accessed
+from the AWS_ACCESS_KEY and AWS_SECRET_KEY env
+variables.
 """
 
-from boto.ec2.autoscale import AutoScaleConnection
 from boto.ec2 import connect_to_region as ec2_connect_to_region
-from boto.ec2.cloudwatch import connect_to_region as cw_connect_to_region
 from boto.cloudformation import connect_to_region as cf_connect_to_region
 
-import config
-
+from cloud import config
 REGION = config.REGION
 ACCESS_KEY = config.AWS_ACCESS_KEY
 SECRET_KEY = config.AWS_SECRET_KEY
-
-def asg():
-    """
-    Create an AutoScale Group connection.
-    """
-    return AutoScaleConnection(ACCESS_KEY, SECRET_KEY)
-
 
 def ec2():
     """
@@ -32,18 +27,6 @@ def ec2():
                 aws_access_key_id=ACCESS_KEY,
                 aws_secret_access_key=SECRET_KEY
            )
-
-
-def clw():
-    """
-    Creates a CloudWatch connection.
-    """
-    return cw_connect_to_region(
-                    REGION,
-                    aws_access_key_id=ACCESS_KEY,
-                    aws_secret_access_key=SECRET_KEY
-                 )
-
 
 def cf():
     """

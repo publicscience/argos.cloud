@@ -6,12 +6,32 @@ Manages provisioning of instances.
 """
 
 from cloud.command import cmd
-import time
 
-def provision(hosts_filename, role, key):
-    # Wait for SSH to become active...
-    time.sleep(10)
-    cmd(['ansible-playbook', '-i',
-        'deploy/hosts/{0}'.format(hosts_filename),
-        'deploy/playbooks/{0}.yml'.format(role),
-        '--private-key={0}'.format(key), '-vvvv'], log=True)
+def provision(hosts_path, playbook, key_name):
+    """
+    Calls an Ansible playbook to provision
+    remote instances.
+    """
+
+    cmd(['ansible-playbook',
+        '-i', hosts_path,
+        'playbooks/{0}.yml'.format(playbook),
+        '--private-key=keys/{0}.pem'.format(key_name), '-vvvv'])
+
+def make_inventory(hosts, group):
+    """
+    Creates a temporary Ansible hosts
+    inventory.
+    """
+    filename = '/tmp/hosts_{0}'.format(group)
+
+    inventory = open(filename, 'w')
+    inventory.write(
+            '[{group}]\n{hosts}'.format(
+                group=group,
+                hosts='\n'.join(hosts)
+            )
+    )
+    inventory.close()
+
+    return filename

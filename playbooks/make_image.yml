@@ -1,0 +1,77 @@
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+  vars:
+      image_security_group: test_sec_group
+  tasks:
+    - name: create image instance security group (temporary, for ssh access)
+      local_action:
+        module: ec2_group
+        name: '{{ image_security_group }}'
+        description: temporary security group for image instances
+        region: '{{ region }}'
+        state: present
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0 # this should eventually only be the control's ip
+
+    - name: create image instance
+      local_action:
+        module: ec2
+        instance_type: m1.small
+        image: '{{ base_ami }}'
+        wait: yes
+        group: '{{ image_security_group }}'
+        region: '{{ region }}'
+        count: 1
+        state: present
+        key_name: '{{ key_name  }}'
+        instance_tags:
+          Name: image_instance
+      register: ec2
+
+      # Note: add_host uses an in-memory inventory, it does not
+      # modify the actual inventory file.
+    - name: add the image instance to the image host group
+      local_action: add_host name={{ item.public_ip }} groupname=image_instances
+      with_items: ec2.instances
+
+    - name: wait for ssh to become available
+      wait_for: host={{ ec2.instances[0].public_ip }} port=22 delay=20
+
+    - name: add instance to known hosts
+      sshknownhosts: host={{ item.public_ip }} state=present dest=~/.ssh/known_hosts
+      with_items: ec2.instances
+
+- name: configure image instance
+  vars:
+      remote_user: ubuntu
+  include: image.yml
+
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: create the AMI
+      local_action:
+        module: ec2_ami
+        instance_id: '{{ item }}'
+        wait: yes
+        name: '{{ image_name }}'
+        region: '{{ region }}'
+      register: instance
+      with_items: ec2.instance_ids
+
+    - name: terminate image instance
+      local_action:
+        module: ec2
+        state: absent
+        instance_ids: '{{ ec2.instance_ids }}'
+
+    - name: terminate security group
+      local_action:
+        module: ec2_group
+        state: absent
+        name: '{{ image_security_group }}'

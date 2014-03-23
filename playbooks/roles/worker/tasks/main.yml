@@ -1,0 +1,15 @@
+- name: create celery group
+  group: name=celery state=present
+
+- name: create celery user
+  user: name=celery group=celery state=present
+
+- name: copy celery init.d script
+  copy: src=celeryd dest=/etc/init.d/celeryd mode=0755
+
+- name: copy celery config
+  template: src=celeryd_config dest=/etc/default/celeryd owner=root
+  notify: restart celery
+
+- name: ensure celery is running
+  service: name=celeryd state=started

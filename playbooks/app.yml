@@ -1,0 +1,9 @@
+- hosts: appservers
+  sudo: yes
+  remote_user: '{{ remote_user }}'
+  vars:
+      db_host: '{{ hostvars[groups.dbservers_internal[0]].ansible_eth0.ipv4.address }}'
+  roles:
+      - common
+      - app
+      - webserver

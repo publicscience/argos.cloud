@@ -11,7 +11,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# Eventually Fabric can replace all the below.
 def ssh(cmd, host=None, user=None, key=None, log=False):
     """
     Convenience method for SSHing.
@@ -87,7 +86,6 @@ def cmd(cmd, log=False):
     Args:
         | cmd (list)    -- list of args for the command.
     """
-    #out, err = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
     proc = subprocess.Popen(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
     output = b''
     while proc.poll() is None:
@@ -103,6 +101,11 @@ def cmd(cmd, log=False):
 
     if log:
         logger.info('COMMAND OUTPUT for {0}:\n'.format(' '.join(cmd)) + output.decode('utf-8'))
+
+    # Raise an exception if the command exited
+    # with a non-zero code.
+    if proc.returncode != 0:
+        raise subprocess.CalledProcessError(proc.returncode, cmd)
 
     return output
 

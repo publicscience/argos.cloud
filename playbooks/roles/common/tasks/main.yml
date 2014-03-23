@@ -1,9 +1,13 @@
+- name: add ansible repository
+  apt_repository: repo=ppa:rquillo/ansible
+
 - name: ensure apt cache is up to date
-  action: apt update_cache=yes
+  apt: update_cache=yes
 
 - name: Install dependencies (system)
   apt: pkg={{ item }} state=installed
   with_items:
+      - ansible
       - git
       - python3.3
       - python3-pip
@@ -45,7 +49,7 @@
   pip: requirements={{ repo_path }}/requirements.txt virtualenv={{ venv_path }}
 
 - name: Download NLTK data
-  copy: src=../files/nltk_data.tar.gz dest=/usr/share/nltk_data.tar.gz
+  copy: src=nltk_data.tar.gz dest=/usr/share/nltk_data.tar.gz
 
 - name: Extract NLTK data
   command: tar -zxvf nltk_data.tar.gz chdir=/usr/share/

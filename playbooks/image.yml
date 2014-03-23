@@ -1,0 +1,5 @@
+- hosts: image_instances
+  sudo: yes
+  remote_user: '{{ remote_user }}'
+  roles:
+      - common

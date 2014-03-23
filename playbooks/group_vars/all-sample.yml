@@ -1,0 +1,17 @@
+# "Global" variables.
+
+git_repo: https://github.com/publicscience/argos.git
+venv_path: /var/env/argos
+repo_path: /var/www/argos
+app_name: argos
+remote_user: ubuntu
+region: us-east-1
+image_name: argos_image
+base_ami: ami-7d317314
+db_user: argos_user
+db_pass: password
+
+# Whatever key you specify here should
+# be added to `keys/`,
+# e.g. `keys/<key_name>.pem`.
+key_name: argos_dummy

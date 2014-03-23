@@ -1,7 +1,0 @@
-- hosts: image
-  sudo: yes
-  remote_user: '{{ remote_user }}'
-  vars_files:
-      - vars/common.yml
-  tasks:
-      - include: tasks/base.yml

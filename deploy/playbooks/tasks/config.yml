@@ -1,7 +1,0 @@
-# Copy the config directory (<env_name>/app_config.py & <env_name>/celery_config.py) to the remote instance.
-
-- name: create app config directory for the environment
-  file: path={{ repo_path }}/conf/{{ ansible_env.ARGOS_ENV }} state=directory
-
-- name: copy app config for enviroment
-  template: src=../files/configs/{{ ansible_env.ARGOS_ENV }}/app_config.py dest={{ repo_path }}/conf/{{ ansible_env.ARGOS_ENV }}/

@@ -15,13 +15,17 @@ $ pip install -r requirements.txt
 You will need to supply a few configuration files and keys:
 
 *Required*
-* The AWS key you use to authenticate on EC2 goes into `keys/`.
-* Configure `config.py` to your needs (this contains settings for
-        interacting with AWS).
+* The AWS key you use to authenticate on EC2 goes into `keys/`. It must
+have the same name as the `key_name` you specify in
+`playbooks/group_vars/all.yml`. For example, if `key_name=foobar`, you
+must have your key at `keys/foobar.pem`.
+* Configure `playbooks/group_vars/all.yml` to your needs.
 * Configure `deploy/files/<env name>/app_config.py` to your needs (this contains your
         application settings).
 * Configure `deploy/files/<env name>celery_config.py` to your needs (this contains your
         [Celery](http://www.celeryproject.org/) settings).
+
+You must also set the `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` environment variables.
 
 *Optional*
 * Configure other files in `deploy/files/` as needed.
@@ -92,9 +96,9 @@ Ansible):
 template for the application and worker instances. For this image, all necessary application
 packages are installed, but no configuration files are copied over. The
 instance is automatically deleted after the image has been created from
-it. The public host name for this image is saved to
-`deploy/hosts/image` so that Ansible can provision it
-(refer to `cloud.manage.images#setup_image`).
+it. Images are environment agnostic, that is, they don't load any
+environment-specific information. Thus this image instance can be reused
+for different environments's infrastructures.
 * The database instance is created.
 * The broker instance is created [currently disabled].
 * An autoscaling group is created for application instances, using the

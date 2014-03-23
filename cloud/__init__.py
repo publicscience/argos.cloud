@@ -1,21 +1,17 @@
-from cloud import connect, manage, util
-import config
+from cloud import connect, manage, util, config
 
 # Logging
-from logger import logger
+from cloud.logger import logger
 logger = logger(__name__)
-
 import logging
 logger = logging.getLogger(__name__)
 
 def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instance_type='db.m1.large'):
     conn = connect.cf()
-    #name = make_name(env)
-    name = '{cloud}-{env}'.format(cloud=config.CLOUD_NAME, env=env)
-    img_name = '{cloud}-image'.format(cloud=config.CLOUD_NAME)
+    name = '{app}-{env}'.format(app=config.APP_NAME, env=env)
+    img_name = config.IMAGE_NAME
 
     logger.info('Commissioning new application cloud...')
-
 
     # Get the app image.
     app_ami_id = manage.images.get_image(img_name)
@@ -23,7 +19,7 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instan
     if app_ami_id is None:
         # CREATE if it doesnt exist
         logger.info('Existing app image wasn\'t found, creating one...')
-        manage.images.create_image_instance(img_name, config.BASE_AMI_ID)
+        manage.images.create_image_instance(img_name, config.BASE_AMI, config.KEY_NAME)
         app_ami_id = manage.images.create_image(img_name)
 
     if manage.formations.get_stack(name) is not None:
@@ -32,9 +28,10 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instan
 
     templates = ['bucket', 'app', 'database']
     logger.info('Merging individual templates: {0}'.format(templates))
-    template = util.build_template(templates)
+    template = manage.formations.build_template(templates)
 
     #print(conn.estimate_template_cost(template))
+    init_script = util.template('templates/init.sh', env=env)
 
     logger.info('Creating the infrastructure...')
     conn.create_stack(
@@ -53,8 +50,8 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instan
 
                 # Database
                 ('DBName', name.replace('-', '_')), # dashes must be underscore for psql
-                ('DBUser', 'argos_user'),
-                ('DBPassword', 'password'),         # temporary, CHANGE THIS!
+                ('DBUser', config.DB_USER),
+                ('DBPassword', config.DB_PASS),
                 ('DBAllocatedStorage', 50),                  # in GB
                 ('DBInstanceClass', db_instance_type),
                 ('EC2SecurityGroup', 'default'),    # for now, use the default sec group. should be creating one for the app group i think.
@@ -69,6 +66,10 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instan
         # Return the output from the stack creation.
         stack = manage.formations.get_stack(name)
         logger.info('Stack output: {0}'.format(stack.outputs))
+
+        # TO DO: Ansible provisioning should happen here.
+        # That is, database hosts and what not need to be added to config files.
+
         return stack.outputs
     except manage.formations.FormationError as e:
         logger.info('There was an error creating the infrastructure: {0}'.format(e.message))
@@ -79,16 +80,15 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instan
 
 def decommission(env):
     conn = connect.cf()
-    name = '{cloud}-{env}'.format(cloud=config.CLOUD_NAME, env=env)
+    name = '{app}-{env}'.format(app=config.APP_NAME, env=env)
 
     stacks = [stack for stack in conn.describe_stacks() if stack.stack_name == name]
     if len(stacks) == 0:
         logger.info('Infrastructure is already decommissioned.')
         return
 
-    conn.delete_stack(name)
-
     logger.info('Decommissioning...')
+    conn.delete_stack(name)
     manage.formations.wait_until_terminated(name)
     logger.info('Decommissioning complete.')
 
@@ -99,5 +99,6 @@ def clean():
     """
     Cleans up image instances and images.
     """
-    manage.images.delete_image_instance(name)
-    manage.delete_image(name)
+    img_name = config.IMAGE_NAME
+    manage.images.delete_image_instance(img_name)
+    manage.images.delete_image(img_name)

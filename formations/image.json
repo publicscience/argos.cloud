@@ -7,12 +7,12 @@
             "Description": "The AMI ID of the base image to use.",
             "Type": "String"
         },
-        "UserData": {
-            "Description": "The user data to pass to the instance.",
-            "Type": "String"
-        },
         "InstanceName": {
             "Description": "The name tag to apply to the instance.",
+            "Type": "String"
+        },
+        "KeyName": {
+            "Description": "The key name to use.",
             "Type": "String"
         }
     },
@@ -22,13 +22,27 @@
             "Type": "AWS::EC2::Instance",
             "Properties": {
                 "ImageId": { "Ref": "ImageId" },
-                "UserData" : { "Fn::Base64": { "Ref": "UserData" } },
                 "Tags": [
                     { "Key": "Name", "Value": { "Ref": "InstanceName" } }
                 ],
-                "KeyName": "argos_dummy"
+                "KeyName":  { "Ref": "KeyName" },
+                "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ]
             }
+        },
+
+        "InstanceSecurityGroup" : {
+          "Type" : "AWS::EC2::SecurityGroup",
+          "Properties" : {
+            "GroupDescription" : "Enable SSH access",
+            "SecurityGroupIngress" : [ {
+              "IpProtocol" : "tcp",
+              "FromPort" : "22",
+              "ToPort" : "22",
+              "CidrIp" : "0.0.0.0/0"
+            } ]
+          }
         }
+
     },
 
     "Outputs": {

@@ -2,12 +2,9 @@
 *.pyc
 *.swp
 *.pem
-config.py
 id_rsa
 id_rsa.pub
 logger/logs/*.log
 .vagrant
-
-# Exclude env configs except the sample one.
-deploy/files/configs/*
-!deploy/files/configs/sample/
+*config.py
+all.yml

@@ -39,6 +39,6 @@ if __name__ == '__main__':
     elif args.command == 'clean':
         confirm = raw_input('This will delete the base image for [{0}]. Are you sure? '.format(args.env))
         if confirm.lower() in ['y', 'yes', 'yeah', 'ya', 'aye']:
-            cloud.clean(args.env)
+            cloud.clean()
         else:
             print('Exiting.')
