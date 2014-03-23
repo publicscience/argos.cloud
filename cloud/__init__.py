@@ -1,4 +1,4 @@
-from cloud import connect, manage, util, config
+from cloud import connect, manage, config
 
 # Logging
 from cloud.logger import logger
@@ -31,7 +31,7 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instan
     template = manage.formations.build_template(templates)
 
     #print(conn.estimate_template_cost(template))
-    init_script = util.template('templates/init.sh', env=env)
+    init_script = open('templates/init.sh', 'r').read().encode('utf-8')
 
     logger.info('Creating the infrastructure...')
     conn.create_stack(

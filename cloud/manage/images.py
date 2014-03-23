@@ -7,7 +7,7 @@ the creation of images from them.
 """
 
 from boto.exception import EC2ResponseError
-from cloud import connect, util, command
+from cloud import connect, command
 from cloud.manage import instances, formations, provision
 from subprocess import CalledProcessError
 

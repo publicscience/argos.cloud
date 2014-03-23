@@ -6,7 +6,4 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "chef/ubuntu-13.10"
-
-  # Set the environment to "sample".
-  config.vm.provision "shell", inline: "echo -e 'ARGOS_ENV=sample' | sudo tee -a /etc/environment"
 end
