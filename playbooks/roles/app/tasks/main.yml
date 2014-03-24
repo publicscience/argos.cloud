@@ -1,5 +1,13 @@
 # Copy the config files (app_config.py & celery_config.py) to the remote instance.
 
+- name: get s3 bucket name for environment
+  sudo: no
+  local_action:
+    module: s3bucket
+    name: '{{ app_name }}-{{ env_name }}-bucket'
+    state: present
+  register: bucket
+
 - name: copy app config for enviroment
   template: src=app_config.py dest={{ repo_path }}/argos/conf/app.py
 

@@ -7,10 +7,6 @@
             "Description": "The group tag to apply to the instance.",
             "Type": "String",
             "Default": "knowledge"
-        },
-        "KeyName": {
-            "Description": "The key name to use.",
-            "Type": "String"
         }
     },
 
@@ -72,9 +68,17 @@
             "Description": "Public IP address of the EC2 instance",
             "Value": { "Fn::GetAtt": [ "KnowledgeInstance", "PublicIp" ] }
         },
+        "KnowledgePublicDNS": {
+            "Description": "Public DNS name of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "KnowledgeInstance", "PublicDnsName" ] }
+        },
         "KnowledgePrivateIP": {
             "Description": "Private IP address of the EC2 instance",
             "Value": { "Fn::GetAtt": [ "KnowledgeInstance", "PrivateIp" ] }
+        },
+        "KnowledgePrivateDNS": {
+            "Description": "Private DNS name of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "KnowledgeInstance", "PrivateDnsName" ] }
         }
     }
 }

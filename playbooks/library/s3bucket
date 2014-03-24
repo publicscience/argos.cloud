@@ -1,0 +1,134 @@
+#!/usr/bin/python
+
+DOCUMENTATION = '''
+---
+module: s3bucket
+short_description: Creates or destroys an S3 bucket by 'Name' tag; it creating one, its name is returned.
+description:
+    - This allows the user to locate an S3 bucket by its `Name` tag, rather than its bucket name (which must be unique and is often unpredictable). The user can ensure its presence or absence; if present its unique bucket name is returned.
+options:
+  name:
+    description:
+      - Bucket's Name tag
+    required: true
+    default: null
+    aliases: []
+  state:
+    description:
+      - Whether or not the bucket is present or absent.
+    required: false
+    choices: [present, absent]
+    default: "present"
+    aliases: []
+  aws_secret_key:
+    description:
+      - AWS secret key. If not set then the value of the AWS_SECRET_KEY environment variable is used. 
+    required: false
+    default: null
+    aliases: ['ec2_secret_key', 'secret_key']
+  aws_access_key:
+    description:
+      - AWS access key. If not set then the value of the AWS_ACCESS_KEY environment variable is used.
+    required: false
+    default: null
+    aliases: [ 'ec2_access_key', 'access_key' ]
+
+requirements: [ "boto" ]
+author: Francis Tseng
+'''
+
+EXAMPLES = '''
+# Ensure bucket is present
+- s3bucket: name=some-bucket-name state=present
+# Ensure bucket is present and store the bucket as a variable
+- s3bucket: name=some-bucket-name state=present
+  register: bucket
+# Ensure bucket is absent
+- s3bucket: name=some-bucket-name state=absent
+'''
+
+import datetime
+import sys
+
+try:
+    import boto
+except ImportError:
+    print("failed=True msg='boto required for this module'")
+    sys.exit(1)
+
+def get_bucket(module, s3, name):
+    try:
+        for bucket in s3.get_all_buckets():
+            try:
+                for tagset in bucket.get_tags():
+                    for tag in tagset:
+                        if tag.key == 'Name' and tag.value == name:
+                            return bucket
+            except s3.provider.storage_response_error:
+                # No tags
+                pass
+    except s3.provider.storage_response_error, e:
+        module.fail_json(msg= str(e))
+    return None
+
+def create_bucket(module, s3, name):
+    bucket = None
+    try:
+        epoch = str((datetime.datetime.now() - datetime.datetime(1970,1,1)).total_seconds()).replace('.', '-')
+        bucket = s3.create_bucket('{0}-{1}'.format(name, epoch))
+    except s3.provider.storage_response_error, e:
+        module.fail_json(msg= str(e))
+    return bucket
+
+
+def delete_bucket(module, s3, bucket):
+    try:
+        bucket_contents = bucket.list()
+        bucket.delete_keys([key.name for key in bucket_contents])
+        bucket.delete()
+        return True
+    except s3.provider.storage_response_error, e:
+        module.fail_json(msg= str(e))
+
+def main():
+    argument_spec = ec2_argument_spec()
+    argument_spec.update(dict(
+            name           = dict(required=True),
+            state          = dict(default='present', choices=['present', 'absent'])
+        ),
+    )
+    module = AnsibleModule(argument_spec=argument_spec)
+
+    name = module.params.get('name')
+    state = module.params.get('state')
+
+    ec2_url, aws_access_key, aws_secret_key, region = get_ec2_creds(module)
+
+    try:
+        s3 = boto.connect_s3(aws_access_key, aws_secret_key)
+    except boto.exception.NoAuthHandlerFound, e:
+        module.fail_json(msg = str(e))
+
+    bucket = get_bucket(module, s3, name)
+
+    if state == 'absent':
+        if bucket is None:
+            module.exit_json(msg="Bucket with Name tag %s is absent."%name, changed=False)
+        else:
+            if delete_bucket(module, s3, bucket):
+                module.exit_json(msg="Bucket with Name tag %s and all keys have been deleted."%name, changed=True)
+
+    if state == 'present':
+        if bucket is None:
+            bucket = create_bucket(module, s3, name)
+            if bucket is not None:
+                module.exit_json(msg="Bucket with Name tag %s has been created."%name, changed=True, name=bucket.name)
+        else:
+            module.exit_json(msg="Bucket with Name tag %s is present."%name, changed=False, name=bucket.name)
+
+
+# import module snippets
+from ansible.module_utils.basic import *
+from ansible.module_utils.ec2 import *
+
+main()

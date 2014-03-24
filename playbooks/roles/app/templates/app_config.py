@@ -6,4 +6,4 @@ AES_IV = '{{ aes_iv }}' # must be 16 bytes
 SECRET_KEY = '{{ secret_key }}'
 
 KNOWLEDGE_HOST = '{{ knowledge_host }}'
-S3_BUCKET_NAME = '{{ s3_bucket_name }}'
+S3_BUCKET_NAME = '{{ bucket.name }}'

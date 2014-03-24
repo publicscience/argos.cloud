@@ -1,4 +1,4 @@
-from cloud import connect, manage, config, name
+from cloud import connect, manage, config, name, command
 
 # Logging
 from cloud.logger import logger
@@ -15,80 +15,89 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instan
     logger.info('Commissioning new application cloud (app={0}, stack_name={1}, image_name={2})...'.format(app, stack_name, img_name))
 
     # Get the app image.
+    logger.info('CHECKING IMAGE ============================================================')
     app_ami_id = manage.images.get_image(img_name)
 
     if app_ami_id is None:
         # CREATE if it doesnt exist
         logger.info('Existing app image wasn\'t found, creating one...')
+        logger.info('BAKING IMAGE ==============================================================')
         manage.images.create_image_instance(img_name, config.BASE_AMI, config.KEY_NAME)
         manage.images.configure_image_instance(img_name, app, config.KEY_NAME)
         app_ami_id = manage.images.create_image(img_name)
+        logger.info('BAKING IMAGE ============================================================== DONE')
+    logger.info('CHECKING IMAGE ============================================================ DONE')
 
+    logger.info('SPAWNING INFRASTRUCTURE ===================================================')
     if manage.formations.get_stack(stack_name) is not None:
         logger.info('Infrastructure for the environment [{0}] already exists.'.format(env))
-        return
+    else:
+        templates = ['global', 'bucket', 'app', 'database', 'knowledge']
+        logger.info('Merging individual templates: {0}'.format(templates))
+        template = manage.formations.build_template(templates)
 
-    templates = ['global', 'bucket', 'app', 'database', 'knowledge']
-    logger.info('Merging individual templates: {0}'.format(templates))
-    template = manage.formations.build_template(templates)
+        # Load init script, which sets up ansible-pull.
+        init_script = open('playbooks/roles/common/files/init.sh', 'r').read().encode('utf-8')
 
-    # Load init script, which sets up ansible-pull.
-    init_script = open('playbooks/roles/common/files/init.sh', 'r').read().encode('utf-8')
+        logger.info('Creating the infrastructure...')
+        logger.info('You can see its progress (and debug issues more easily) by checking out [https://console.aws.amazon.com/cloudformation/]')
+        conn.create_stack(
+                stack_name,
+                template,
+                parameters=[
+                    # Refer to the formation JSON templates for
+                    # details on these parameters.
 
-    logger.info('Creating the infrastructure...')
-    logger.info('You can see its progress (and debug issues more easily) by checking out [https://console.aws.amazon.com/cloudformation/]')
-    conn.create_stack(
-            stack_name,
-            template,
-            parameters=[
-                # Refer to the formation JSON templates for
-                # details on these parameters.
+                    # Global
+                    ('AppName', app),
+                    ('EnvironmentName', env),
+                    ('BaseImageId', config.BASE_AMI),
+                    ('KeyName', config.KEY_NAME),
 
-                # Global
-                ('AppName', app),
-                ('EnvironmentName', env),
-                ('BaseImageId', config.BASE_AMI),
+                    # App group
+                    ('InstanceType', instance_type),
+                    ('InstancePort', 8888),             # Port the ELB forwards to on the instances.
+                    ('MinSize', min_size),
+                    ('MaxSize', max_size),
+                    ('ImageAMI', app_ami_id),
 
-                # App group
-                ('InstanceType', instance_type),
-                ('InstancePort', 8888),             # Port the ELB forwards to on the instances.
-                ('MinSize', min_size),
-                ('MaxSize', max_size),
-                ('ImageAMI', app_ami_id),
+                    # Database
+                    ('DBName', config.DB_NAME), # dashes must be underscore for psql
+                    ('DBUser', config.DB_USER),
+                    ('DBPassword', config.DB_PASS),
+                    ('DBAllocatedStorage', 50),                  # in GB
+                    ('DBInstanceClass', db_instance_type),
+                    ('EC2SecurityGroup', 'default'),    # for now, use the default sec group. should be creating one for the app group i think.
+                    ('MultiAZ', 'true')
+                ]
+        )
 
-                # Database
-                ('DBName', config.DB_NAME), # dashes must be underscore for psql
-                ('DBUser', config.DB_USER),
-                ('DBPassword', config.DB_PASS),
-                ('DBAllocatedStorage', 50),                  # in GB
-                ('DBInstanceClass', db_instance_type),
-                ('EC2SecurityGroup', 'default'),    # for now, use the default sec group. should be creating one for the app group i think.
-                ('MultiAZ', 'true'),
+        try:
+            manage.formations.wait_until_ready(stack_name)
 
-                # Knowledge
-                ('KeyName', config.KEY_NAME),
-            ]
-    )
+        except manage.formations.FormationError as e:
+            logger.info('There was an error creating the infrastructure: {0}'.format(e.message))
+            logger.info('If the stack was rolled back, it is likely due to an error with the template.')
+            logger.info('Cleaning up...')
+            manage.formations.wait_until_rolled_back(stack_name)
+            decommission(stack_name)
 
-    try:
-        manage.formations.wait_until_ready(stack_name)
-        logger.info('Commissioning complete.')
+    # Return the output from the stack creation.
+    stack = manage.formations.get_stack(stack_name)
+    logger.info('Stack output: {0}'.format(stack.outputs))
+    logger.info('SPAWNING INFRASTRUCTURE =================================================== DONE')
 
-        # Return the output from the stack creation.
-        stack = manage.formations.get_stack(stack_name)
-        logger.info('Stack output: {0}'.format(stack.outputs))
+    logger.info('CONFIGURING INFRASTRUCTURE ================================================')
+    logger.info('Adding instances to known hosts...')
+    targets = [manage.formations.get_output(stack, key) for key in ['KnowledgePublicIP', 'KnowledgePublicDNS']]
+    command.add_to_known_hosts(targets)
 
-        # TO DO ansible provisioning here.
+    deploy(env)
+    logger.info('CONFIGURING INFRASTRUCTURE ================================================ DONE')
 
-        #print(conn.estimate_template_cost(template))
-
-        return stack.outputs
-    except manage.formations.FormationError as e:
-        logger.info('There was an error creating the infrastructure: {0}'.format(e.message))
-        logger.info('If the stack was rolled back, it is likely due to an error with the template.')
-        logger.info('Cleaning up...')
-        manage.formations.wait_until_rolled_back(stack_name)
-        decommission(stack_name)
+    logger.info('Stack output: {0}'.format(stack.outputs))
+    logger.info('Commissioning complete.')
+    return stack.outputs
 
 def decommission(env):
     conn = connect.cf()
@@ -106,7 +115,12 @@ def decommission(env):
     logger.info('Decommissioning complete.')
 
 def deploy(env):
-    pass
+    app = config.APP_NAME
+    key_name = config.KEY_NAME
+
+    for playbook in ['knowledge']:
+        logger.info('Configuring with playbook [{0}]'.format(playbook))
+        manage.provision.provision(app, playbook, key_name, env=env)
 
 def clean():
     """

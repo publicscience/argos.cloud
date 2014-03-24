@@ -21,9 +21,11 @@ def provision(app, playbook, key_name, env=None):
     if env is not None:
         vars.append('env_name={0}'.format(env))
 
-    cmd(['ansible-playbook',
+    command = ['ansible-playbook',
         '-i', 'playbooks/hosts/ec2.py',                 # Use the EC2 dynamic inventory script.
         'playbooks/{0}.yml'.format(playbook),           # Load the playbook.
         '--private-key=keys/{0}.pem'.format(key_name),  # Load the proper key.
-        '-e', '"{vars}"'.format(vars=' '.join(vars)),   # Set the necessary variables.
-        '-vvvv'])                                       # Verbose output for debugging.
+        '-e', '""{vars}""'.format(vars=' '.join(vars)), # Set the necessary variables. Double quotes are necessary!
+        '-vvvv']                                       # Verbose output for debugging.
+
+    cmd(command)

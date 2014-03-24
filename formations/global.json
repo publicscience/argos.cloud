@@ -15,6 +15,10 @@
     "BaseImageId": {
         "Description": "The AMI ID of the base image to use.",
         "Type": "String"
+    },
+    "KeyName": {
+        "Description": "The key name to use.",
+        "Type": "String"
     }
   }
 }

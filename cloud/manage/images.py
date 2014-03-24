@@ -11,9 +11,8 @@ from boto.exception import EC2ResponseError
 from cloud import connect, command
 from cloud.manage import formations, provision
 
-from subprocess import CalledProcessError, Popen
+from subprocess import CalledProcessError
 from time import sleep
-import os
 
 import logging
 logger = logging.getLogger(__name__)
@@ -149,13 +148,7 @@ def create_image_instance(name, base_ami_id, key_name):
 
     # Need to add the instance to known hosts.
     logger.info('Adding instance to known hosts...')
-    known_hosts = open(os.path.expanduser('~/.ssh/known_hosts'), 'a')
-    devnull = open(os.devnull, 'w')
-    Popen(['ssh-keyscan', '-p', '22', instance_ip], stdout=known_hosts, stderr=devnull)
-    Popen(['ssh-keyscan', '-p', '22', instance_host], stdout=known_hosts, stderr=devnull)
-    known_hosts.close()
-    devnull.close()
-
+    command.add_to_known_hosts([instance_ip, instance_host])
     logger.info('Image instance successfully created.')
 
 def configure_image_instance(name, app, key_name):

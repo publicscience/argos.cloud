@@ -5,7 +5,7 @@ Command
 Interface for commanding the cloud.
 """
 
-import subprocess, time
+import subprocess, time, os
 
 import logging
 logger = logging.getLogger(__name__)
@@ -46,3 +46,14 @@ def cmd(cmd, log=False):
 
     return output
 
+def add_to_known_hosts(hosts):
+    """
+    Adds a list of hosts to known hosts.
+    """
+    known_hosts = open(os.path.expanduser('~/.ssh/known_hosts'), 'a')
+    devnull = open(os.devnull, 'w')
+    for host in hosts:
+        logger.info('Adding {0} to known hosts...'.format(host))
+        subprocess.Popen(['ssh-keyscan', '-p', '22', host], stdout=known_hosts, stderr=devnull)
+    known_hosts.close()
+    devnull.close()

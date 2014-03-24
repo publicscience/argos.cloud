@@ -88,7 +88,8 @@
         "ImageId" : { "Ref" : "ImageAMI" },
         "UserData" : { "Fn::Base64" : { "Ref" : "InstancePort" }},
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "InstanceType" : { "Ref" : "InstanceType" }
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "KeyName":  { "Ref": "KeyName" }
       }
     },
 
