@@ -166,8 +166,6 @@ process, except for the image (unless its deletion is specified).
 If you hit a snag while generating the image, you may want to clean
 things up. This command will do that for you by removing the image
 instance (if it still exists) and the image itself (if it still exists).
-Normally, commissioning will automatically clean things before it gets
-going, but sometimes you have to be explicit.
 
 
 ---
