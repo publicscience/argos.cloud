@@ -111,8 +111,8 @@ It consists of:
 * a database server (AWS RDS)
 * application servers (~~in an autoscaling group behind a load balancer~~ during prototyping, just a single instance. See below.)
 * a knowledge server (running Apache Fuseki and Stanford NER)
-* a broker server (manages distributed tasks) [currently disabled]
-* worker servers (in an autoscaping group) [not yet implemented]
+* a broker server (manages distributed tasks) [*currently disabled*]
+* worker servers (in an autoscaping group) [*currently disabled*]
 
 Infrastructure creation is handled by AWS's CloudFormation in the `cloud` module.
 
@@ -142,12 +142,12 @@ As a courtesy the commission function will also try to deploy to this infrastruc
 
 *In greater detail:*
 * The database (RDS) is created.
-* The broker instance is created [currently disabled].
+* The broker instance is created [*currently disabled*].
 * ~~An autoscaling group is created for application instances~~An
 application instance is created, using the
 image instance as the base. (See below)
 * An autoscaling group is created for worker instances, using the
-image instance as the base [not yet implemented]. 
+image instance as the base [*currently disabled*]. 
 
 ### Deploying
 Once the infrastructure is up and running it is likely that your future interactions with it will primarily be deployment.
