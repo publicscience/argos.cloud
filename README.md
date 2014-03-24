@@ -122,10 +122,11 @@ in `playbooks/`.
 ### Commissioning
 At a high level, the commissioning process works like so:
 
-1. Baking an image
-First an image is baked, if one by the specified name ({app}-image) doesn't already exist. The image is environment and configuration agnostic; it doesn't store any sensitive information, it can be reused across environments, and you don't need to worry about it if configuration options change. This is probably the longest running step.
+#### Baking an image
+First an image is baked, if one by the specified name (`<app>-image`) doesn't already exist. The image is environment and configuration agnostic; it doesn't store any sensitive information, it can be reused across environments, and you don't need to worry about it if configuration options change. This is probably the longest running step.
 
 *In greater detail:*
+
 An image instance is created, which is used to generate a base
 template for the application and worker instances. For this image, all necessary application
 packages are installed, but no configuration files are copied over. The
@@ -134,7 +135,7 @@ it. Images are environment agnostic, that is, they don't load any
 environment-specific information. Thus this image instance can be reused
 for different environments's infrastructures.
 
-2. Commission the infrastructure
+#### Commission the infrastructure
 Then the infrastructure is created. That is, the instances, RDS instances, autoscaling groups, etc are all made. Where appropriate, the baked image is used.
 
 As a courtesy the commission function will also try to deploy to this infrastructure (see below).
