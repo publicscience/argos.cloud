@@ -121,6 +121,7 @@ from time import time
 import boto
 from boto import ec2
 from boto import rds
+from boto import rds2
 from boto import route53
 import ConfigParser
 
@@ -291,11 +292,42 @@ class Ec2Inventory(object):
 	''' Makes an AWS API call to the list of RDS instances in a particular
         region '''
 
+        # Hack to get the AWS account id.
+        # Amazon does not provide any easy way to get it.
+        ec2_conn = ec2.connect_to_region(region)
+        sg = ec2_conn.get_all_security_groups()
+        account_id = sg[0].owner_id
+
         try:
             conn = rds.connect_to_region(region)
+            conn2 = rds2.connect_to_region(region) # To get RDS tags.
             if conn:
                 instances = conn.get_all_dbinstances()
                 for instance in instances:
+
+                    # NOTE: Boto 2.27.0 (latest as of 3/24/2014)
+                    # is not able to get tags from RDS instances
+                    # in a way like it can get EC2 tags.
+                    # Until there is a better solution, the following works.
+
+                    # Construct the ARN for this RDS instance,
+                    # so we can get its tags.
+                    arn = ':'.join([
+                        'arn',
+                        'aws',
+                        'rds',
+                        region,
+                        account_id,
+                        'db',
+                        instance.id
+                    ])
+
+                    # Get its raw tagset and
+                    # standardize it to the way Boto presents
+                    # EC2 tags.
+                    tagset = conn2.list_tags_for_resource(arn)['ListTagsForResourceResponse']['ListTagsForResourceResult']['TagList']
+                    instance.tags = {tag['Key']: tag['Value'] for tag in tagset}
+
                     self.add_rds_instance(instance, region)
         except boto.exception.BotoServerError, e:
             if not e.reason == "Forbidden":
@@ -429,6 +461,11 @@ class Ec2Inventory(object):
             print 'Package boto seems a bit older.'
             print 'Please upgrade boto >= 2.3.0.'
             sys.exit(1)
+
+        # Inventory: Group by tag keys
+        for k, v in instance.tags.iteritems():
+            key = self.to_safe("tag_" + k + "=" + v)
+            self.push(self.inventory, key, dest)
 
         # Inventory: Group by engine
         self.push(self.inventory, self.to_safe("rds_" + instance.engine), dest)
