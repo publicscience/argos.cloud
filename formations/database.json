@@ -46,11 +46,6 @@
       "AllowedValues" : [ "db.m1.small", "db.m1.large", "db.m1.xlarge", "db.m2.xlarge", "db.m2.2xlarge", "db.m2.4xlarge" ],
       "ConstraintDescription" : "must select a valid database instance type."
     },
-    "EC2SecurityGroup": {
-      "Default": "default",
-      "Description" : "The EC2 security group that contains instances that need access to the database",
-      "Type": "String"
-    },
     "MultiAZ": {
       "Default": "true",
       "Description" : "Create a multi-AZ RDS database instance",
@@ -141,7 +136,7 @@
       "Type": "AWS::RDS::DBSecurityGroup",
       "Properties": {
         "DBSecurityGroupIngress": {
-          "EC2SecurityGroupName": { "Ref": "EC2SecurityGroup" }
+          "EC2SecurityGroupName": { "Ref": "WebServerSecurityGroup" }
         },
         "GroupDescription": "database access"
       }
