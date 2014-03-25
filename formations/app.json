@@ -1,10 +1,10 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
 
-  "Description": "Create a load balanced autoscaling group where the instances are locked down to only accept traffic from the load balancer. The site is available on port 80, however, the instances can be configured to listen on any port (8888 by default).",
+  "Description": "Creates an application EC2 instance with port 80 open for HTTP.",
 
   "Parameters" : {
-    "InstanceType" : {
+    "WebServerInstanceType" : {
       "Description" : "WebServer EC2 instance type",
       "Type" : "String",
       "Default" : "m1.small",
@@ -12,28 +12,7 @@
       "ConstraintDescription" : "must be a valid EC2 instance type."
     },
 
-    "InstancePort" : {
-      "Description" : "TCP/IP port of the web server",
-      "Type" : "String",
-      "Default" : "8888"
-    },
-
-    "MinSize": {
-        "Default": "1",
-        "Description": "The minimum size of the autoscaling group",
-        "Type": "Number",
-        "MinValue": "1",
-        "ConstraintDescription": "must be at least 1."
-    },
-    "MaxSize": {
-        "Default": "5",
-        "Description": "The maximum size of the autoscaling group",
-        "Type": "Number",
-        "MinValue": "1",
-        "ConstraintDescription": "must be at least 1."
-    },
-
-    "ImageAMI": {
+    "AppImageAMI": {
         "Description": "The AMI ID of the base image for the group's instances",
         "Type": "String"
     },
@@ -46,153 +25,75 @@
   },
 
   "Resources" : {
-    "WebServerGroup" : {
-      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+    "WebServerInstance" : {
+      "Type": "AWS::EC2::Instance",
       "Properties" : {
-        "AvailabilityZones" : { "Fn::GetAZs" : "" },
-        "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
-        "MinSize" : { "Ref": "MinSize" },
-        "MaxSize" : { "Ref": "MaxSize" },
-        "LoadBalancerNames" : [ { "Ref" : "ElasticLoadBalancer" } ],
+        "ImageId": { "Ref": "AppImageAMI" },
+        "SecurityGroups" : [ { "Ref" : "WebServerSecurityGroup" } ],
+        "KeyName":  { "Ref": "KeyName" },
         "Tags": [
             { "Key": "Name",
               "Value": { "Fn::Join": [ "-", [
                   { "Ref": "AppName" },
                   { "Ref": "EnvironmentName" },
                   { "Ref": "AppGroup" }
-              ]]},
-              "PropagateAtLaunch": "true"
+              ]]}
             },
             {
               "Key": "Group",
-              "Value": { "Ref": "AppGroup" },
-              "PropagateAtLaunch": "true"
+              "Value": { "Ref": "AppGroup" }
             },
             {
               "Key": "Env",
-              "Value": { "Ref": "EnvironmentName" },
-              "PropagateAtLaunch": "true"
+              "Value": { "Ref": "EnvironmentName" }
             },
             {
               "Key": "App",
-              "Value": { "Ref": "AppName" },
-              "PropagateAtLaunch": "true"
+              "Value": { "Ref": "AppName" }
             }
         ]
       }
     },
 
-    "LaunchConfig" : {
-      "Type" : "AWS::AutoScaling::LaunchConfiguration",
-      "Properties" : {
-        "ImageId" : { "Ref" : "ImageAMI" },
-        "UserData" : { "Fn::Base64" : { "Ref" : "InstancePort" }},
-        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "InstanceType" : { "Ref" : "InstanceType" },
-        "KeyName":  { "Ref": "KeyName" }
-      }
-    },
-
-    "ElasticLoadBalancer" : {
-      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
-      "Properties" : {
-        "AvailabilityZones" : { "Fn::GetAZs" : "" },
-        "Listeners" : [ {
-          "LoadBalancerPort" : "80",
-          "InstancePort" : { "Ref" : "InstancePort" },
-          "Protocol" : "HTTP"
-        } ],
-        "HealthCheck" : {
-          "Target" : { "Fn::Join" : [ "", ["HTTP:", { "Ref" : "InstancePort" }, "/"]]},
-          "HealthyThreshold" : "3",
-          "UnhealthyThreshold" : "5",
-          "Interval" : "30",
-          "Timeout" : "5"
-        }
-      }
-    },
-
-    "InstanceSecurityGroup" : {
+    "WebServerSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
         "GroupDescription" : "Enable SSH access and HTTP access on the inbound port",
         "SecurityGroupIngress" : [ {
-          "IpProtocol" : "tcp",
-          "FromPort" : { "Ref" : "InstancePort" },
-          "ToPort" : { "Ref" : "InstancePort" },
-          "SourceSecurityGroupOwnerId" : {"Fn::GetAtt" : ["ElasticLoadBalancer", "SourceSecurityGroup.OwnerAlias"]},
-          "SourceSecurityGroupName" : {"Fn::GetAtt" : ["ElasticLoadBalancer", "SourceSecurityGroup.GroupName"]}
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "0.0.0.0/0"
+        }, {
+            "IpProtocol" : "tcp",
+            "FromPort" : "22",
+            "ToPort" : "22",
+            "CidrIp" : "0.0.0.0/0"
         } ]
-      }
-    },
-
-    "WebServerScaleUpPolicy" : {
-      "Type" : "AWS::AutoScaling::ScalingPolicy",
-      "Properties" : {
-        "AdjustmentType" : "ChangeInCapacity",
-        "AutoScalingGroupName" : { "Ref" : "WebServerGroup" },
-        "Cooldown" : "60",
-        "ScalingAdjustment" : "1"
-      }
-    },
-
-    "WebServerScaleDownPolicy" : {
-      "Type" : "AWS::AutoScaling::ScalingPolicy",
-      "Properties" : {
-        "AdjustmentType" : "ChangeInCapacity",
-        "AutoScalingGroupName" : { "Ref" : "WebServerGroup" },
-        "Cooldown" : "60",
-        "ScalingAdjustment" : "-1"
-      }
-    },
-
-    "CPUAlarmHigh": {
-     "Type": "AWS::CloudWatch::Alarm",
-     "Properties": {
-        "AlarmDescription": "Scale-up if CPU > 90% for 10 minutes",
-        "MetricName": "CPUUtilization",
-        "Namespace": "AWS/EC2",
-        "Statistic": "Average",
-        "Period": "300",
-        "EvaluationPeriods": "2",
-        "Threshold": "90",
-        "AlarmActions": [ { "Ref": "WebServerScaleUpPolicy" } ],
-        "Dimensions": [
-          {
-            "Name": "AutoScalingGroupName",
-            "Value": { "Ref": "WebServerGroup" }
-          }
-        ],
-        "ComparisonOperator": "GreaterThanThreshold"
-      }
-    },
-
-    "CPUAlarmLow": {
-     "Type": "AWS::CloudWatch::Alarm",
-     "Properties": {
-        "AlarmDescription": "Scale-down if CPU < 70% for 10 minutes",
-        "MetricName": "CPUUtilization",
-        "Namespace": "AWS/EC2",
-        "Statistic": "Average",
-        "Period": "300",
-        "EvaluationPeriods": "2",
-        "Threshold": "70",
-        "AlarmActions": [ { "Ref": "WebServerScaleDownPolicy" } ],
-        "Dimensions": [
-          {
-            "Name": "AutoScalingGroupName",
-            "Value": { "Ref": "WebServerGroup" }
-          }
-        ],
-        "ComparisonOperator": "LessThanThreshold"
       }
     }
   },
 
-  "Outputs" : {
-    "ElasticLoadBalancerURL" : {
-      "Description" : "URL of the website",
-      "Value" :  { "Fn::Join" : [ "", [ "http://", { "Fn::GetAtt" : [ "ElasticLoadBalancer", "DNSName" ]}]]}
+    "Outputs": {
+        "WebServerInstanceId": {
+            "Description": "InstanceId of the EC2 instance",
+            "Value": { "Ref": "WebServerInstance" }
+        },
+        "WebServerPublicIP": {
+            "Description": "Public IP address of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "WebServerInstance", "PublicIp" ] }
+        },
+        "WebServerPublicDNS": {
+            "Description": "Public DNS name of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "WebServerInstance", "PublicDnsName" ] }
+        },
+        "WebServerPrivateIP": {
+            "Description": "Private IP address of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "WebServerInstance", "PrivateIp" ] }
+        },
+        "WebServerPrivateDNS": {
+            "Description": "Private DNS name of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "WebServerInstance", "PrivateDnsName" ] }
+        }
     }
-  }
 }

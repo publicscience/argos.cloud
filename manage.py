@@ -16,7 +16,7 @@ if __name__ == '__main__':
     # Optional
     parser.add_argument('--min_size', type=int, help='the minimum autoscaling size', default=1)
     parser.add_argument('--max_size', type=int, help='the maximum autoscaling size', default=4)
-    parser.add_argument('--instance_type', type=str, help='the instance type for the application infrastructure', default='m1.medium')
+    parser.add_argument('--instance_type', type=str, help='the instance type for the application infrastructure', default='m3.large')
     args = parser.parse_args()
 
     if args.command == 'commission':

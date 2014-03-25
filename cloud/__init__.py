@@ -6,7 +6,7 @@ logger = logger(__name__)
 import logging
 logger = logging.getLogger(__name__)
 
-def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instance_type='db.m1.large'):
+def commission(env, min_size=1, max_size=4, instance_type='m3.large', db_instance_type='db.m1.large'):
     conn = connect.cf()
     app = config.APP_NAME
     stack_name = name.stack(app, env)
@@ -54,12 +54,12 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instan
                     ('BaseImageId', config.BASE_AMI),
                     ('KeyName', config.KEY_NAME),
 
-                    # App group
-                    ('InstanceType', instance_type),
-                    ('InstancePort', 8888),             # Port the ELB forwards to on the instances.
-                    ('MinSize', min_size),
-                    ('MaxSize', max_size),
-                    ('ImageAMI', app_ami_id),
+                    # App (webserver) group
+                    ('WebServerInstanceType', instance_type),
+                    #('InstancePort', 8888),             # Port the ELB forwards to on the instances.
+                    #('MinSize', min_size),
+                    #('MaxSize', max_size),
+                    ('AppImageAMI', app_ami_id),
 
                     # Database
                     ('DBName', config.DB_NAME), # dashes must be underscore for psql
@@ -89,7 +89,7 @@ def commission(env, min_size=1, max_size=4, instance_type='m1.medium', db_instan
 
     logger.info('CONFIGURING INFRASTRUCTURE ================================================')
     logger.info('Adding instances to known hosts...')
-    targets = [manage.formations.get_output(stack, key) for key in ['KnowledgePublicIP', 'KnowledgePublicDNS']]
+    targets = [manage.formations.get_output(stack, key) for key in ['KnowledgePublicIP', 'KnowledgePublicDNS', 'WebServerPublicIP', 'WebServerPublicDNS']]
     command.add_to_known_hosts(targets)
 
     deploy(env)
@@ -118,7 +118,7 @@ def deploy(env):
     app = config.APP_NAME
     key_name = config.KEY_NAME
 
-    for playbook in ['knowledge']:
+    for playbook in ['knowledge', 'app']:
         logger.info('Configuring with playbook [{0}]'.format(playbook))
         manage.provision.provision(app, playbook, key_name, env=env)
 
