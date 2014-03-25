@@ -41,7 +41,7 @@
   get_url: url={{ ner_url }} dest=/srv/ner.zip
 
 - name: extract ner
-  command: unzip -o ner.zip -d /srv/ner chdir=/srv/
+  shell: unzip -o ner.zip -d /tmp && mv /tmp/stanford-ner-* /srv/ner chdir=/srv/
 
 - name: copy ner init.d script
   copy: src=ner-init dest=/etc/init.d/ner mode=755
