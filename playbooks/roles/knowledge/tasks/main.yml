@@ -1,3 +1,13 @@
+- name: ensure apt cache is up to date
+  apt: update_cache=yes
+
+- name: install knowledge dependencies
+  apt: pkg={{ item }} state=installed
+  with_items:
+      - unzip
+      - openjdk-7-jre # for NER
+      - bzip2
+
 - name: download jena
   get_url: url={{ jena_url }} dest=/srv/jena.tar.gz
 
@@ -11,37 +21,50 @@
   file: path=/srv/fuseki state=directory
 
 - name: extract jena
-  command: tar -xzvf jena.tar.gz -C /srv/jena --strip 1 chdir=/srv/
+  command: tar -xzvf jena.tar.gz -C /srv/jena --strip 1 chdir=/srv/ creates=/srv/jena
 
 - name: extract fuseki
-  command: tar -xzvf fuseki.tar.gz -C /srv/fuseki --strip 1 chdir=/srv/
-
-- name: make knowledge directory
-  file: path=/srv/knowledge state=directory
+  command: tar -xzvf fuseki.tar.gz -C /srv/fuseki --strip 1 chdir=/srv/ creates=/srv/fuseki
 
 - name: copy fuseki init.d script
   copy: src=fuseki-init dest=/etc/init.d/fuseki mode=755
 
-#- name: download dbpedia data
-# TO DO: add this
+- name: make knowledge directory
+  file: path=/srv/knowledge state=directory
+
+- name: download dbpedia datasets
+  dbpedia: name={{ item }} dest=/srv/knowledge
+  with_items:
+    - labels
+    - short_abstracts
+    - long_abstracts
+    - images
+    - redirects
+    - geo_coordinates
+    - persondata
+    - disambiguations
+  register: datasets
+
+- name: extract downloaded datasets
+  shell: bunzip2 -k {{ item.file }}
+  when: item.changed
+  with_items: datasets.results
+  notify:
+    - clean knowledge
+    - digest knowledge
+
+- name: digest knowledge
+  shell: /srv/jena/bin/tdbloader2 --loc {{ knowledge_db }} {{ knowledge_path }}*.ttl creates={{ knowledge_db }}
+  notify: restart fuseki
 
 - name: ensure fuseki is running
   service: name=fuseki enabled=yes state=started
-
-- name: ensure apt cache is up to date
-  apt: update_cache=yes
-
-- name: install ner dependencies
-  apt: pkg={{ item }} state=installed
-  with_items:
-      - unzip
-      - openjdk-7-jre
 
 - name: download stanford ner
   get_url: url={{ ner_url }} dest=/srv/ner.zip
 
 - name: extract ner
-  shell: unzip -o ner.zip -d /tmp && mv /tmp/stanford-ner-* /srv/ner chdir=/srv/
+  shell: unzip -o ner.zip -d /tmp && mv /tmp/stanford-ner-* /srv/ner chdir=/srv/ creates=/srv/ner
 
 - name: copy ner init.d script
   copy: src=ner-init dest=/etc/init.d/ner mode=755

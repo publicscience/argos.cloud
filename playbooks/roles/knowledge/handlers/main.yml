@@ -1,0 +1,9 @@
+- name: restart fuseki
+  service: name=fuseki state=restarted
+
+- name: clean knowledge
+  file: path={{ knowledge_db }} state=absent
+
+- name: digest knowledge
+  shell: /srv/jena/bin/tdbloader2 --loc {{ knowledge_db }} {{ knowledge_path }}*.ttl creates={{ knowledge_db }}
+  notify: restart fuseki

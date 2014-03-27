@@ -51,4 +51,4 @@
   copy: src=nltk_data.tar.gz dest=/usr/share/nltk_data.tar.gz
 
 - name: Extract NLTK data
-  command: tar -zxvf nltk_data.tar.gz chdir=/usr/share/
+  command: tar -zxvf nltk_data.tar.gz chdir=/usr/share/ creates=/usr/share/nltk_data

@@ -1,0 +1,202 @@
+#!/usr/bin/python
+
+"""
+Knowledge
+==============
+
+Downloads and processes DBpedia dumps.
+
+At time of writing, the available datasets are::
+
+    instance_types
+    instance_types_heuristic
+    mappingbased_properties
+    mappingbased_properties_cleaned
+    specific_mappingbased_properties
+    labels
+    short_abstracts
+    long_abstracts
+    images
+    geo_coordinates
+    raw_infobox_properties
+    raw_infobox_property_definitions
+    homepages
+    persondata
+    pnd
+    interlanguage_links
+    article_categories
+    category_labels
+    skos_categories
+    external_links
+    wikipedia_links
+    page_links
+    redirects
+    redirects_transitive
+    disambiguations
+    iri_same_as_uri
+    page_ids
+    revision_ids
+    revision_uris
+
+Refer to http://wiki.dbpedia.org/Downloads for more details.
+"""
+
+import re
+import time
+from HTMLParser import HTMLParser
+import urllib2 as request
+import httplib
+
+CHUNK = 16 * 1024
+
+def get_dataset_url(module, dataset):
+    dataset_urls = [dataset_url for dataset_url in get_dataset_urls() if dataset in dataset_url]
+    if dataset_urls:
+        return dataset_urls[0]
+    return None
+
+def get_dataset_urls():
+    """
+    Extracts urls for the different datasets
+    from DBpedia.
+    """
+    url = 'http://wiki.dbpedia.org/Downloads'
+    req = request.Request(url)
+    resp = request.urlopen(req)
+    parser = DumpPageParser()
+    parser.feed(resp.read().decode('utf-8', 'ignore'))
+    dataset_urls = parser.get_data()
+    return dataset_urls
+
+class DumpPageParser(HTMLParser, object):
+    """
+    For parsing out pages-articles filenames
+    from the Wikipedia latest dump page.
+    """
+    def __init__(self):
+        super(DumpPageParser, self).__init__()
+
+        # Find the links for the English datasets.
+        self.regex = re.compile('\/en\/')
+        self.reset()
+        self.results = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'a':
+            for name, value in attrs:
+                if name == 'href':
+                        if self.regex.findall(value) and value[-7:] == 'ttl.bz2':
+                                self.results.append(value)
+
+    def get_data(self):
+        return self.results
+
+
+def _expired(url, file):
+    """
+    Determines if the remote file
+    is newer than the local file.
+    """
+    req = request.Request(url)
+    req.get_method = lambda : 'HEAD'
+    try:
+        resp = request.urlopen(req)
+
+        # Server file last modified.
+        last_mod = resp.headers['Last-Modified']
+        last_mod_time = time.strptime(last_mod, '%a, %d %b %Y %H:%M:%S %Z')
+
+        # Local file last modified.
+        file_last_mod = os.path.getmtime(file)
+        file_last_mod_time = time.gmtime(file_last_mod)
+
+        return last_mod_time > file_last_mod_time
+
+    except request.HTTPError as e:
+        logger.error('HTTP Error:', e.code, url)
+    except request.URLError as e:
+        logger.error('URL Error:', e.reason, url)
+
+
+def download(module, url, dest, force=False):
+    """
+    Downloads a file from the specified URL.
+    Will resume an existing download if the target
+    server supports it (responds with the "Accepts-Range" header).
+    """
+
+    # Strip trailing slash, if there is one.
+    dest = dest.rstrip('\/')
+    filename = url.split('/').pop()
+    file = '{0}/{1}'.format(dest, filename)
+    existing_size = 0
+
+    # Probe to get headers
+    probe = request.Request(url)
+    probe.get_method = lambda : 'HEAD'
+    probe_resp = request.urlopen(probe)
+    total_size = float(probe_resp.headers['Content-Length'].strip())
+
+    # If file already exists,
+    # but there is not a newer file is on the server
+    # and the force option isn't specified.
+    if os.path.exists(file) and not _expired(url, file) and not force:
+        existing_size =  os.path.getsize(file)
+
+        # Check if the file has already been downloaded_size.
+        if total_size == existing_size:
+            module.exit_json(msg="File {0} is already downloaded to {1}".format(url, file), file=file, changed=False)
+
+    # Create/overwrite file.
+    outfile = open(file, 'wb')
+    outfile.seek(0)
+
+    # Vanilla request.
+    req = request.Request(url)
+
+    try:
+        # Get response.
+        resp = request.urlopen(req)
+
+        # Pull out the chunks!
+        for chunk in iter(lambda: resp.read(CHUNK), b''):
+            # Write the chunk to the file.
+            outfile.write(chunk)
+
+            # Update existing size.
+            existing_size += len(chunk)
+
+        # Return the download's filepath.
+        module.exit_json(msg="File {0} has been downloaded to {1}".format(url, file), file=file, changed=True)
+
+    except request.HTTPError as e:
+        module.fail_json(msg='HTTP Error: {0} at {1}'.format(e.code, url))
+    except request.URLError as e:
+        module.fail_json(msg='URL Error: {0} at {1}'.format(e.code, url))
+
+
+
+def main():
+    argument_spec = dict(
+            name           = dict(required=True),
+            dest           = dict(required=True),
+            force          = dict(default=False, required=False)
+    )
+    module = AnsibleModule(argument_spec=argument_spec)
+
+    name = module.params.get('name')
+    dest = module.params.get('dest')
+    force = module.params.get('force')
+
+    dataset_url = get_dataset_url(module, name)
+
+    if dataset_url is None:
+        module.fail_json(msg="URL for the dataset %s could not be found."%name)
+
+    download(module, dataset_url, dest, force=force)
+
+
+# import module snippets
+from ansible.module_utils.basic import *
+
+main()

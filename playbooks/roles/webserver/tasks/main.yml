@@ -3,29 +3,47 @@
   with_items:
     - uwsgi
     - nginx
+    - supervisor
+    - uwsgi-plugin-python3
+
+- name: remove default nginx site
+  file: path=/etc/nginx/sites-enabled/default state=absent
 
 - name: copy nginx config
-  template: src=nginx.conf dest=/etc/nginx/sites-available/default
+  template: src=nginx.conf dest=/etc/nginx/sites-available/{{ app_name }}.conf
   notify: restart nginx
 
 - name: enable nginx config (symlink)
-  file: src=/etc/nginx/sites-available/default dest=/etc/nginx/sites-enabled/default state=link
+  file: src=/etc/nginx/sites-available/{{ app_name }}.conf dest=/etc/nginx/sites-enabled/{{ app_name }}.conf state=link
 
-- name: make uwsgi config directory
-  file: path=/opt/uwsgi/etc/uwsgi.d/ state=directory
+- name: copy uwsgi config
+  template: src=uwsgi.ini  dest=/etc/uwsgi/apps-available/{{ app_name }}.ini
 
-- name: copy uwsgi fastrouter config
-  copy: src=fastrouter dest=/opt/uwsgi/etc/uwsgi.d/fastrouter
-  notify: restart uwsgi
+- name: enable uwsgi config (symlink)
+  file: src=/etc/uwsgi/apps-available/{{ app_name }}.ini dest=/etc/uwsgi/apps-enabled/{{ app_name }}.ini state=link
 
-- name: copy uwsgi init.d script
-  copy: src=uwsgi-init dest=/etc/init.d/uwsgi mode=755
+- name: create supervisord config folder
+  file: dest=/etc/supervisor state=directory owner=root
 
-- name: copy uwsgi vassal config
-  template: src=vassal.ini dest=/opt/uwsgi/etc/uwsgi.d/vassal.ini
+- name: copy supervisord init script
+  file: src=supervisord-init dest=/etc/init.d/supervisord mode=0755
 
-- name: ensure uwsgi is running
-  service: name=uwsgi enabled=yes state=started
+- name: copy supervisor program config
+  template: src=supervisor.conf dest=/etc/supervisor/conf.d/{{ app_name }}.conf
+  register: supervisor_conf
+  notify: restart app
+
+- shell: supervisorctl reread
+  when: supervisor_conf.changed
+
+- shell: supervisorctl update
+  when: supervisor_conf.changed
+
+- name: ensure supervisor is running
+  service: name=supervisor state=started enabled=yes
 
 - name: ensure nginx is running
   service: name=nginx enabled=yes state=started
+
+- name: ensure app is running
+  supervisorctl: name={{ app_name }} state=started

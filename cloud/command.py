@@ -28,23 +28,16 @@ def cmd(cmd, log=False):
     while proc.poll() is None:
         line = proc.stdout.readline()
         print(line.decode('utf-8'))
-        output += line
 
     # Captures any missed output.
     # Note that because we are redirecting stderr to stdout,
     # `err` will be None; its output is included in `out`.
     out, err = proc.communicate()
-    output += out
-
-    if log:
-        logger.info('COMMAND OUTPUT for {0}:\n'.format(' '.join(cmd)) + output.decode('utf-8'))
 
     # Raise an exception if the command exited
     # with a non-zero code.
     if proc.returncode != 0:
         raise subprocess.CalledProcessError(proc.returncode, cmd)
-
-    return output
 
 def add_to_known_hosts(hosts):
     """

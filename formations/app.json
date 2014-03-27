@@ -29,6 +29,7 @@
       "Type": "AWS::EC2::Instance",
       "Properties" : {
         "ImageId": { "Ref": "AppImageAMI" },
+        "InstanceType": { "Ref": "WebServerInstanceType" },
         "SecurityGroups" : [ { "Ref" : "WebServerSecurityGroup" } ],
         "KeyName":  { "Ref": "KeyName" },
         "Tags": [

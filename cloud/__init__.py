@@ -6,7 +6,7 @@ logger = logger(__name__)
 import logging
 logger = logging.getLogger(__name__)
 
-def commission(env, min_size=1, max_size=4, instance_type='m3.large', db_instance_type='db.m1.large'):
+def commission(env, min_size=1, max_size=4, instance_type='m3.xlarge', db_instance_type='db.m1.large', knowledge_instance_type='m3.xlarge'):
     conn = connect.cf()
     app = config.APP_NAME
     stack_name = name.stack(app, env)
@@ -61,13 +61,15 @@ def commission(env, min_size=1, max_size=4, instance_type='m3.large', db_instanc
                     #('MaxSize', max_size),
                     ('AppImageAMI', app_ami_id),
 
+                    # Knowledge
+                    ('KnowledgeInstanceType', knowledge_instance_type),
+
                     # Database
                     ('DBName', config.DB_NAME), # dashes must be underscore for psql
                     ('DBUser', config.DB_USER),
                     ('DBPassword', config.DB_PASS),
                     ('DBAllocatedStorage', 50),                  # in GB
                     ('DBInstanceClass', db_instance_type),
-                    ('EC2SecurityGroup', 'default'),    # for now, use the default sec group. should be creating one for the app group i think.
                     ('MultiAZ', 'true')
                 ]
         )
