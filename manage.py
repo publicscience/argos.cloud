@@ -9,14 +9,25 @@ if __name__ == '__main__':
             epilog='For info on instances, see https://aws.amazon.com/ec2/instance-types/instance-details/'
             )
 
-    # Required
     parser.add_argument('env', metavar='env', type=str, help='the environment, e.g. production, qa')
-    parser.add_argument('command', metavar='command', type=str, help='the command to perform.', choices=['commission', 'decommission', 'deploy', 'clean'])
+    subparsers = parser.add_subparsers(help='management commands', dest='command')
 
-    # Optional
-    parser.add_argument('--min_size', type=int, help='the minimum autoscaling size', default=1)
-    parser.add_argument('--max_size', type=int, help='the maximum autoscaling size', default=4)
-    parser.add_argument('--instance_type', type=str, help='the instance type for the application infrastructure', default='m3.xlarge')
+    # commission
+    commission_parser = subparsers.add_parser('commission', help='commission new infrastructure')
+    commission_parser.add_argument('--min_size', type=int, help='the minimum autoscaling size', default=1)
+    commission_parser.add_argument('--max_size', type=int, help='the maximum autoscaling size', default=4)
+    commission_parser.add_argument('--instance_type', type=str, help='the instance type for the application infrastructure', default='m3.medium')
+
+    # decommission
+    decommission_parser = subparsers.add_parser('decommission', help='decommissions infrastructure')
+
+    # deploy
+    deploy_parser = subparsers.add_parser('deploy', help='deploy to infrastructure')
+    deploy_parser.add_argument('role', type=str, help='the role to deploy', default='all', choices=['all', 'app', 'knowledge', 'collector'])
+
+    # clean
+    clean_parser = subparsers.add_parser('clean', help='cleans base images and image instances')
+
     args = parser.parse_args()
 
     if args.command == 'commission':
@@ -34,7 +45,7 @@ if __name__ == '__main__':
             print('Exiting.')
 
     elif args.command == 'deploy':
-        cloud.deploy(args.env)
+        cloud.deploy(args.env, role=args.role)
 
     elif args.command == 'clean':
         confirm = raw_input('This will delete the base image for [{0}]. Are you sure? '.format(args.env))

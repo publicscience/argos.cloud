@@ -16,6 +16,10 @@
         "Description": "The AMI ID of the base image to use.",
         "Type": "String"
     },
+    "AppImageAMI": {
+        "Description": "The AMI ID of the application base image",
+        "Type": "String"
+    },
     "KeyName": {
         "Description": "The key name to use.",
         "Type": "String"

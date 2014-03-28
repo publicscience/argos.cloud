@@ -1,0 +1,81 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description": "Template for generating a collector instance, which regularly collects and processes new articles.",
+
+    "Parameters": {
+        "CollectorGroup": {
+            "Description": "The group tag to apply to the instance.",
+            "Type": "String",
+            "Default": "collector"
+        },
+
+        "CollectorInstanceType" : {
+          "Description" : "Collector EC2 instance type",
+          "Type" : "String",
+          "Default" : "m1.small",
+          "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m2.4xlarge","m3.medium","m3.large", "m3.xlarge","m3.2xlarge","c1.medium","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge"],
+          "ConstraintDescription" : "must be a valid EC2 instance type."
+        }
+    },
+
+    "Resources": {
+        "CollectorInstance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "ImageId": { "Ref": "AppImageAMI" },
+                "InstanceType": { "Ref": "CollectorInstanceType" },
+                "Tags": [
+                    { "Key": "Name", "Value": { "Fn::Join": [ "-", [
+                        { "Ref": "AppName" },
+                        { "Ref": "EnvironmentName" },
+                        { "Ref": "CollectorGroup" }
+                    ]]}},
+                    { "Key": "Group", "Value": { "Ref": "CollectorGroup" } },
+                    { "Key": "Env", "Value": { "Ref": "EnvironmentName" } },
+                    { "Key": "App", "Value": { "Ref": "AppName" } }
+                ],
+                "KeyName":  { "Ref": "KeyName" },
+                "SecurityGroups" : [ { "Ref" : "CollectorInstanceSecurityGroup" } ]
+            }
+        },
+
+        "CollectorInstanceSecurityGroup" : {
+          "Type" : "AWS::EC2::SecurityGroup",
+          "Properties" : {
+            "GroupDescription" : "Enable SSH access",
+            "SecurityGroupIngress" : [
+                {
+                    "IpProtocol" : "tcp",
+                    "FromPort" : "22",
+                    "ToPort" : "22",
+                    "CidrIp" : "0.0.0.0/0"
+                }
+            ]
+          }
+        }
+
+    },
+
+    "Outputs": {
+        "CollectorInstanceId": {
+            "Description": "InstanceId of the EC2 instance",
+            "Value": { "Ref": "CollectorInstance" }
+        },
+        "CollectorPublicIP": {
+            "Description": "Public IP address of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "CollectorInstance", "PublicIp" ] }
+        },
+        "CollectorPublicDNS": {
+            "Description": "Public DNS name of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "CollectorInstance", "PublicDnsName" ] }
+        },
+        "CollectorPrivateIP": {
+            "Description": "Private IP address of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "CollectorInstance", "PrivateIp" ] }
+        },
+        "CollectorPrivateDNS": {
+            "Description": "Private DNS name of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "CollectorInstance", "PrivateDnsName" ] }
+        }
+    }
+}

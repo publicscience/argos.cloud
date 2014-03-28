@@ -15,7 +15,7 @@ CELERY_APP="application"
 # CELERY_APP="proj.tasks:app"
 
 # Where to chdir at start.
-CELERYD_CHDIR="{{ repo_path }}"
+CELERYD_CHDIR="{{ app_path }}"
 
 # Extra command-line arguments to the worker
 CELERYD_OPTS="--time-limit=300 --concurrency=8"

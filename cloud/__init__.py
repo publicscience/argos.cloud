@@ -6,7 +6,9 @@ logger = logger(__name__)
 import logging
 logger = logging.getLogger(__name__)
 
-def commission(env, min_size=1, max_size=4, instance_type='m3.xlarge', db_instance_type='db.m1.large', knowledge_instance_type='m3.xlarge'):
+DEFAULT_INSTANCE_TYPE='m3.medium'
+
+def commission(env, min_size=1, max_size=4, instance_type=DEFAULT_INSTANCE_TYPE, db_instance_type='db.m1.medium', knowledge_instance_type=DEFAULT_INSTANCE_TYPE, collector_instance_type='m1.small', db_size=250):
     conn = connect.cf()
     app = config.APP_NAME
     stack_name = name.stack(app, env)
@@ -32,46 +34,51 @@ def commission(env, min_size=1, max_size=4, instance_type='m3.xlarge', db_instan
     if manage.formations.get_stack(stack_name) is not None:
         logger.info('Infrastructure for the environment [{0}] already exists.'.format(env))
     else:
-        templates = ['global', 'bucket', 'app', 'database', 'knowledge']
+        templates = ['global', 'bucket', 'app', 'database', 'knowledge', 'collector']
         logger.info('Merging individual templates: {0}'.format(templates))
         template = manage.formations.build_template(templates)
 
         # Load init script, which sets up ansible-pull.
         init_script = open('playbooks/roles/common/files/init.sh', 'r').read().encode('utf-8')
 
+        parameters = [
+            # Refer to the formation JSON templates for
+            # details on these parameters.
+
+            # Global
+            ('AppName', app),
+            ('EnvironmentName', env),
+            ('BaseImageId', config.BASE_AMI),
+            ('KeyName', config.KEY_NAME),
+
+            # App (webserver) group
+            ('WebServerInstanceType', instance_type),
+            #('InstancePort', 8888),             # Port the ELB forwards to on the instances.
+            #('MinSize', min_size),
+            #('MaxSize', max_size),
+            ('AppImageAMI', app_ami_id),
+
+            # Knowledge
+            ('KnowledgeInstanceType', knowledge_instance_type),
+
+            # Collector
+            ('CollectorInstanceType', collector_instance_type),
+
+            # Database
+            ('DBName', config.DB_NAME), # dashes must be underscore for psql
+            ('DBUser', config.DB_USER),
+            ('DBPassword', config.DB_PASS),
+            ('DBAllocatedStorage', db_size),                  # in GB
+            ('DBInstanceClass', db_instance_type),
+            ('MultiAZ', 'false') # no multi-AZ for now since its overkill and almost double the price
+        ]
+
         logger.info('Creating the infrastructure...')
         logger.info('You can see its progress (and debug issues more easily) by checking out [https://console.aws.amazon.com/cloudformation/]')
         conn.create_stack(
                 stack_name,
                 template,
-                parameters=[
-                    # Refer to the formation JSON templates for
-                    # details on these parameters.
-
-                    # Global
-                    ('AppName', app),
-                    ('EnvironmentName', env),
-                    ('BaseImageId', config.BASE_AMI),
-                    ('KeyName', config.KEY_NAME),
-
-                    # App (webserver) group
-                    ('WebServerInstanceType', instance_type),
-                    #('InstancePort', 8888),             # Port the ELB forwards to on the instances.
-                    #('MinSize', min_size),
-                    #('MaxSize', max_size),
-                    ('AppImageAMI', app_ami_id),
-
-                    # Knowledge
-                    ('KnowledgeInstanceType', knowledge_instance_type),
-
-                    # Database
-                    ('DBName', config.DB_NAME), # dashes must be underscore for psql
-                    ('DBUser', config.DB_USER),
-                    ('DBPassword', config.DB_PASS),
-                    ('DBAllocatedStorage', 50),                  # in GB
-                    ('DBInstanceClass', db_instance_type),
-                    ('MultiAZ', 'true')
-                ]
+                parameters=parameters
         )
 
         try:
@@ -91,13 +98,14 @@ def commission(env, min_size=1, max_size=4, instance_type='m3.xlarge', db_instan
 
     logger.info('CONFIGURING INFRASTRUCTURE ================================================')
     logger.info('Adding instances to known hosts...')
-    targets = [manage.formations.get_output(stack, key) for key in ['KnowledgePublicIP', 'KnowledgePublicDNS', 'WebServerPublicIP', 'WebServerPublicDNS']]
+    targets = [manage.formations.get_output(stack, key) for key in ['KnowledgePublicIP', 'KnowledgePublicDNS', 'WebServerPublicIP', 'WebServerPublicDNS', 'CollectorPublicIP', 'CollectorPublicDNS']]
     command.add_to_known_hosts(targets)
 
     deploy(env)
     logger.info('CONFIGURING INFRASTRUCTURE ================================================ DONE')
 
     logger.info('Stack output: {0}'.format(stack.outputs))
+
     logger.info('Commissioning complete.')
     return stack.outputs
 
@@ -116,11 +124,15 @@ def decommission(env):
     manage.formations.wait_until_terminated(stack_name)
     logger.info('Decommissioning complete.')
 
-def deploy(env):
+def deploy(env, role='all'):
     app = config.APP_NAME
     key_name = config.KEY_NAME
 
-    for playbook in ['knowledge', 'app']:
+    playbooks = [role]
+    if role == 'all':
+        playbooks = ['knowledge', 'app', 'collector']
+
+    for playbook in playbooks:
         logger.info('Configuring with playbook [{0}]'.format(playbook))
         manage.provision.provision(app, playbook, key_name, env=env)
 

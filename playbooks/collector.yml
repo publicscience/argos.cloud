@@ -1,0 +1,19 @@
+- hosts: 'tag_Name_{{ app_name }}-{{ env_name }}-collector'
+  sudo: yes
+  remote_user: '{{ remote_user }}'
+  vars:
+      db_group: 'tag_Name_{{ app_name }}-{{ env_name }}-database'
+      db_host: '{{ groups[db_group][0] }}'
+
+      knowledge_group: 'tag_Name_{{ app_name }}-{{ env_name }}-knowledge'
+      knowledge_host: '{{ hostvars[groups[knowledge_group][0]].ec2_private_dns_name }}'
+
+      # Not using brokers or workers at the moment.
+      #broker_group: 'tag_Name_{{ app_name }}-{{ env_name }}-broker'
+      #broker_host: '{{ hostvars[groups[broker_group][0]].ec2_private_dns_name }}'
+      broker_host: 'foo'
+  roles:
+      - common
+      - app
+      - collector
+

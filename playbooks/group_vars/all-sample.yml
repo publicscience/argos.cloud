@@ -3,7 +3,7 @@
 
 git_repo: https://github.com/publicscience/argos.git
 venv_path: /var/env/argos
-repo_path: /var/www/argos
+app_path: /var/www/argos
 app_name: argos
 remote_user: ubuntu
 region: us-east-1

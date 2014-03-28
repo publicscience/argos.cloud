@@ -43,7 +43,7 @@
       "Default": "db.m1.small",
       "Description" : "The database instance type",
       "Type": "String",
-      "AllowedValues" : [ "db.m1.small", "db.m1.large", "db.m1.xlarge", "db.m2.xlarge", "db.m2.2xlarge", "db.m2.4xlarge" ],
+      "AllowedValues" : [ "db.m1.small", "db.m1.medium", "db.m1.large", "db.m1.xlarge", "db.m2.xlarge", "db.m2.2xlarge", "db.m2.4xlarge" ],
       "ConstraintDescription" : "must select a valid database instance type."
     },
     "MultiAZ": {
@@ -63,6 +63,12 @@
   "Mappings" : {
     "InstanceTypeMap" : {
       "db.m1.small" : {
+        "CPULimit" : "60",
+        "FreeStorageSpaceLimit" : "1024",
+        "ReadIOPSLimit" : "100",
+        "WriteIOPSLimit" : "100"
+      },
+      "db.m1.medium" : {
         "CPULimit" : "60",
         "FreeStorageSpaceLimit" : "1024",
         "ReadIOPSLimit" : "100",
@@ -135,9 +141,12 @@
     "DBSecurityGroup": {
       "Type": "AWS::RDS::DBSecurityGroup",
       "Properties": {
-        "DBSecurityGroupIngress": {
+        "DBSecurityGroupIngress": [{
           "EC2SecurityGroupName": { "Ref": "WebServerSecurityGroup" }
         },
+        {
+          "EC2SecurityGroupName": { "Ref": "CollectorInstanceSecurityGroup" }
+        }],
         "GroupDescription": "database access"
       }
     },
