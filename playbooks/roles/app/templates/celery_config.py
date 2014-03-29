@@ -23,10 +23,10 @@ CELERY_MAX_CACHED_RESULTS = 1
 # Send emails on errors
 CELERY_SEND_TASK_ERROR_EMAILS = True
 ADMINS = (
-    ('{{ admin_name }}', '{{ admin_email }}')
+    ('{{ celery_admin_name }}', '{{ celery_admin_email }}')
 )
-SERVER_EMAIL = 'bot@gmail.com'
-EMAIL_HOST = 'smtp.gmail.com'
+SERVER_EMAIL = '{{ celery_email_user }}'
+EMAIL_HOST = '{{ email_host }}'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'bot@gmail.com'
-EMAIL_HOST_PASSWORD = 'your-pass'
+EMAIL_HOST_USER = '{{ celery_email_user }}'
+EMAIL_HOST_PASSWORD = '{{ celery_email_password }}'
