@@ -2,7 +2,7 @@
   command: chdir={{ app_path }} {{ venv_path }}/bin/python -c "import argos.core.membrane.collector as c; c.load_sources_from_file()"
 
 - name: copy ponder script
-  template: src=ponder.sh dest=/var/ponder.sh mode=644
+  template: src=ponder.sh dest=/var/ponder.sh mode=0751
 
 - name: create ponder cron job
-  cron: name='collect and digest new articles (ponder)' special_time=hourly job=/var/ponder.sh state=present
+  cron: name='ponder' special_time=hourly job=/var/ponder.sh cron_file=ponder user=root state=present

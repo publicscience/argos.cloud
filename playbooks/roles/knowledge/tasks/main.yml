@@ -27,13 +27,16 @@
   command: tar -xzvf fuseki.tar.gz -C /srv/fuseki --strip 1 chdir=/srv/
 
 - name: copy fuseki init.d script
-  copy: src=fuseki-init dest=/etc/init.d/fuseki mode=755
+  template: src=fuseki-init dest=/etc/init.d/fuseki mode=755
 
-- name: make knowledge directory
-  file: path=/srv/knowledge state=directory
+- name: create knowledge directory
+  file: path={{ knowledge_path }} state=directory
+
+- name: create knowledge db directory
+  file: path={{ knowledge_db }} state=directory
 
 - name: download dbpedia datasets
-  dbpedia: name={{ item }} dest=/srv/knowledge
+  dbpedia: name={{ item }} dest={{ knowledge_path }}
   with_items:
     - labels
     - short_abstracts
@@ -50,12 +53,7 @@
   when: item.changed
   with_items: datasets.results
   notify:
-    - clean knowledge
-    - digest knowledge
-
-- name: digest knowledge
-  shell: /srv/jena/bin/tdbloader2 --loc {{ knowledge_db }} {{ knowledge_path }}*.ttl creates={{ knowledge_db }}
-  notify: restart fuseki
+    - update knowledge
 
 - name: ensure fuseki is running
   service: name=fuseki enabled=yes state=started
@@ -68,6 +66,8 @@
 
 - name: copy ner init.d script
   copy: src=ner-init dest=/etc/init.d/ner mode=755
+  notify:
+      - restart ner
 
 - name: ensure ner is running
   service: name=ner enabled=yes state=started

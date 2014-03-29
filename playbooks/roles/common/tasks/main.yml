@@ -48,7 +48,13 @@
   pip: requirements={{ app_path }}/requirements.txt virtualenv={{ venv_path }} virtualenv_command=virtualenv-3.3 virtualenv_site_packages=no
 
 - name: Download NLTK data
-  copy: src=nltk_data.tar.gz dest=/usr/share/nltk_data.tar.gz
+  command: '{{ venv_path }}/bin/python -m nltk.downloader -d /usr/share/nltk_data {{ item }}'
+  with_items:
+      - wordnet
+      - stopwords
+      - punkt
+      - words
+      - maxent_treebank_pos_tagger
+      - maxent_ne_chunker
 
-- name: Extract NLTK data
-  command: tar -zxvf nltk_data.tar.gz chdir=/usr/share/ creates=/usr/share/nltk_data
+

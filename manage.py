@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     # deploy
     deploy_parser = subparsers.add_parser('deploy', help='deploy to infrastructure')
-    deploy_parser.add_argument('role', type=str, help='the role to deploy', default='all', choices=['all', 'app', 'knowledge', 'collector'])
+    deploy_parser.add_argument('--role', type=str, help='the role to deploy', default='all', choices=['all', 'app', 'knowledge', 'collector'])
 
     # clean
     clean_parser = subparsers.add_parser('clean', help='cleans base images and image instances')

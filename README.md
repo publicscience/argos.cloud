@@ -42,6 +42,16 @@ aws_secret_access_key = YOURSECRETKEY
 * Configure provisioning variables in `playbooks/roles/*/vars/` as
 needed.
 
+
+You might also want to add this to your SSH config to help prevent
+timeouts/broken pipes for especially long-running tasks:
+```
+# ~/.ssh/config
+
+ServerAliveInterval 120
+TCPKeepAlive no
+```
+
 ---
 
 ## Usage

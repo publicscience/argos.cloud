@@ -11,7 +11,7 @@ export FUSEKI_HOME
 start() {
         echo "Starting fuseki..."
         cd $FUSEKI_HOME
-        ./fuseki-server --loc=/srv/knowledge/knodb /knowledge 2>&1 &
+        ./fuseki-server --loc={{ knowledge_db }} /knowledge 2>&1 &
         echo $! &> /tmp/fuseki.pid
         sleep 2
         echo "done."

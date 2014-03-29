@@ -1,9 +1,13 @@
 - name: restart fuseki
   service: name=fuseki state=restarted
 
-- name: clean knowledge
-  file: path={{ knowledge_db }} state=absent
+- name: restart ner
+  service: name=ner state=restarted
 
-- name: digest knowledge
-  shell: /srv/jena/bin/tdbloader2 --loc {{ knowledge_db }} {{ knowledge_path }}*.ttl creates={{ knowledge_db }}
+- name: update knowledge
+  shell: /srv/jena/bin/tdbloader2 --loc /tmp/knodb {{ knowledge_path }}*.ttl
+  notify: move knowledge
+
+- name: move knowledge
+  command: rsync -rau --delete --remove-source-files /tmp/knodb/ {{ knowledge_db }}
   notify: restart fuseki

@@ -24,3 +24,5 @@ aes_iv: '123456789abcdefg' # must be 16 bytes
 secret_key: 'some-secret-key'
 
 s3_bucket_name: foo
+aws_access_key_id: your_access_key_id
+aws_secret_access_key: your_secret_access_key
