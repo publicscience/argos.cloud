@@ -124,15 +124,11 @@ def decommission(env):
     manage.formations.wait_until_terminated(stack_name)
     logger.info('Decommissioning complete.')
 
-def deploy(env, role='all'):
+def deploy(env, roles=['knowledge', 'app', 'collector']):
     app = config.APP_NAME
     key_name = config.KEY_NAME
 
-    playbooks = [role]
-    if role == 'all':
-        playbooks = ['knowledge', 'app', 'collector']
-
-    for playbook in playbooks:
+    for playbook in roles:
         logger.info('Configuring with playbook [{0}]'.format(playbook))
         manage.provision.provision(app, playbook, key_name, env=env)
 

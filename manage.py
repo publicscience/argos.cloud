@@ -22,8 +22,9 @@ if __name__ == '__main__':
     decommission_parser = subparsers.add_parser('decommission', help='decommissions infrastructure')
 
     # deploy
+    roles = ['app', 'knowledge', 'collector']
     deploy_parser = subparsers.add_parser('deploy', help='deploy to infrastructure')
-    deploy_parser.add_argument('--role', type=str, help='the role to deploy', default='all', choices=['all', 'app', 'knowledge', 'collector'])
+    deploy_parser.add_argument('--roles', type=str, nargs='+', help='the role(s) to deploy', default=roles, choices=roles)
 
     # clean
     clean_parser = subparsers.add_parser('clean', help='cleans base images and image instances')
@@ -45,7 +46,7 @@ if __name__ == '__main__':
             print('Exiting.')
 
     elif args.command == 'deploy':
-        cloud.deploy(args.env, role=args.role)
+        cloud.deploy(args.env, roles=args.roles)
 
     elif args.command == 'clean':
         confirm = raw_input('This will delete the base image for [{0}]. Are you sure? '.format(args.env))
