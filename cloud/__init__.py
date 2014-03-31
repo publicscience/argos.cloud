@@ -1,7 +1,7 @@
 from cloud import connect, manage, config, name, command
 
 # Logging
-from cloud.logger import logger
+from cloud.logger import logger, notify
 logger = logger(__name__)
 import logging
 logger = logging.getLogger(__name__)
@@ -107,6 +107,7 @@ def commission(env, min_size=1, max_size=4, instance_type=DEFAULT_INSTANCE_TYPE,
     logger.info('Stack output: {0}'.format(stack.outputs))
 
     logger.info('Commissioning complete.')
+    notify.notify('Commissioning for [{0}] complete.'.format(env))
     return stack.outputs
 
 def decommission(env):
@@ -123,6 +124,7 @@ def decommission(env):
     conn.delete_stack(stack_name)
     manage.formations.wait_until_terminated(stack_name)
     logger.info('Decommissioning complete.')
+    notify.notify('Decommissioning for [{0}] complete.'.format(env))
 
 def deploy(env, roles=['knowledge', 'app', 'collector']):
     app = config.APP_NAME
@@ -131,6 +133,8 @@ def deploy(env, roles=['knowledge', 'app', 'collector']):
     for playbook in roles:
         logger.info('Configuring with playbook [{0}]'.format(playbook))
         manage.provision.provision(app, playbook, key_name, env=env)
+
+    notify.notify('Deployment for [{0}] complete.'.format(env))
 
 def clean():
     """
