@@ -17,4 +17,5 @@ EMAIL_HOST_USER = '{{ error_email_user }}'
 EMAIL_HOST_PASSWORD = '{{ error_email_password }}'
 ADMINS = {{ error_admins }}
 
+
 # NOTE also need to setup social media api keys and secrets.
