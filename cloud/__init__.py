@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_INSTANCE_TYPE='m3.medium'
 
-def commission(env, min_size=1, max_size=4, instance_type=DEFAULT_INSTANCE_TYPE, db_instance_type='db.m1.medium', knowledge_instance_type='m3.large', collector_instance_type='m1.small', db_size=250):
+def commission(env, min_size=1, max_size=4, instance_type=DEFAULT_INSTANCE_TYPE, db_instance_type='db.m1.medium', knowledge_instance_type='m3.large', collector_instance_type='c3.large', db_size=250):
     conn = connect.cf()
     app = config.APP_NAME
     stack_name = name.stack(app, env)
