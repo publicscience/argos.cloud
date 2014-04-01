@@ -47,4 +47,4 @@
   service: name=nginx enabled=yes state=started
 
 - name: ensure app is running
-  supervisorctl: name={{ app_name }} state=started
+  supervisorctl: name={{ app_name }} state=restarted

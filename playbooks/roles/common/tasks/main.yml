@@ -1,4 +1,4 @@
-- name: Install pycurl (needed by Ansible)
+- name: install pycurl (needed by Ansible)
   apt: pkg=python-pycurl state=installed
 
 - name: add ansible repository
@@ -7,7 +7,7 @@
 - name: ensure apt cache is up to date
   apt: update_cache=yes
 
-- name: Install dependencies (system)
+- name: install dependencies (system)
   apt: pkg={{ item }} state=installed
   with_items:
       - ansible
@@ -18,25 +18,28 @@
       - bzr # For getting the latest python-dateutil.
       - postgresql-server-dev-9.1 # For psycopg.
 
-- name: Clone git repository
+- name: clone git repository
   git: repo={{ git_repo }} dest={{ app_path }} force=yes accept_hostkey=yes
 
-- name: Install dependencies (pip)
+- name: set ownership of app directory
+  file: path={{ app_path }} group=www-data owner=www-data recurse=yes
+
+- name: install dependencies (pip)
   pip: name={{ item }} executable=pip3
   with_items:
       - virtualenv
       - cython
 
-- name: Install scipy dependencies
+- name: install scipy dependencies
   command: sudo apt-get -y build-dep python3-scipy
 
-- name: Install mwlib dependencies
+- name: install mwlib dependencies
   apt: pkg={{ item }} state=installed
   with_items:
       - libevent-dev
       - re2c
 
-- name: Install lxml dependencies
+- name: install lxml dependencies
   apt: pkg={{ item }} state=installed
   with_items:
       - libxml2-dev
