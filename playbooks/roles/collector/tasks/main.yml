@@ -1,5 +1,5 @@
 - name: load default sources
-  command: chdir={{ app_path }} {{ venv_path }}/bin/python -c "import argos.core.membrane.collector as c; c.load_sources_from_file()"
+  command: chdir={{ app_path }} {{ venv_path }}/bin/python -c "import argos.core.membrane.feed as f; f.load_sources_from_file()"
 
 - name: copy ponder script
   template: src=ponder.sh dest=/var/ponder.sh mode=0751
