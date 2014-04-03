@@ -1,5 +1,5 @@
 - name: load default sources
-  command: chdir={{ app_path }} {{ venv_path }}/bin/python manage.py load_sources
+  command: chdir={{ app_path }} {{ venv_path }}/bin/python manage.py create:sources
 
 - name: copy ponder script
   template: src=ponder.sh dest=/var/ponder.sh mode=0751
