@@ -15,5 +15,5 @@ echo $! > "$PIDFILE"
 chmod 644 "$PIDFILE"
 
 cd {{ app_path }}
-{{ venv_path }}/bin/python -c 'from argos.core.membrane.collector import ponder; ponder()'
+{{ venv_path }}/bin/python manage.py ponder
 
