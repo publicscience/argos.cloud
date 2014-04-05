@@ -1,43 +1,43 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
 
-  "Description": "Creates an application EC2 instance with port 80 open for HTTP.",
+  "Description": "Creates an application API EC2 instance with port 80 open for HTTP.",
 
   "Parameters" : {
-    "WebServerInstanceType" : {
-      "Description" : "WebServer EC2 instance type",
+    "APIServerInstanceType" : {
+      "Description" : "APIServer EC2 instance type",
       "Type" : "String",
       "Default" : "m1.small",
       "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m2.4xlarge","m3.medium","m3.large", "m3.xlarge","m3.2xlarge","c1.medium","c3.large", "c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge"],
       "ConstraintDescription" : "must be a valid EC2 instance type."
     },
 
-    "AppGroup": {
+    "APIGroup": {
         "Description": "The group tag to apply to the instance.",
         "Type": "String",
-        "Default": "app"
+        "Default": "api"
     }
   },
 
   "Resources" : {
-    "WebServerInstance" : {
+    "APIServerInstance" : {
       "Type": "AWS::EC2::Instance",
       "Properties" : {
         "ImageId": { "Ref": "AppImageAMI" },
-        "InstanceType": { "Ref": "WebServerInstanceType" },
-        "SecurityGroups" : [ { "Ref" : "WebServerSecurityGroup" } ],
+        "InstanceType": { "Ref": "APIServerInstanceType" },
+        "SecurityGroups" : [ { "Ref" : "APIServerSecurityGroup" } ],
         "KeyName":  { "Ref": "KeyName" },
         "Tags": [
             { "Key": "Name",
               "Value": { "Fn::Join": [ "-", [
                   { "Ref": "AppName" },
                   { "Ref": "EnvironmentName" },
-                  { "Ref": "AppGroup" }
+                  { "Ref": "APIGroup" }
               ]]}
             },
             {
               "Key": "Group",
-              "Value": { "Ref": "AppGroup" }
+              "Value": { "Ref": "APIGroup" }
             },
             {
               "Key": "Env",
@@ -51,7 +51,7 @@
       }
     },
 
-    "WebServerSecurityGroup" : {
+    "APIServerSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
         "GroupDescription" : "Enable SSH access and HTTP access on the inbound port",
@@ -71,25 +71,25 @@
   },
 
     "Outputs": {
-        "WebServerInstanceId": {
+        "APIServerInstanceId": {
             "Description": "InstanceId of the EC2 instance",
-            "Value": { "Ref": "WebServerInstance" }
+            "Value": { "Ref": "APIServerInstance" }
         },
-        "WebServerPublicIP": {
+        "APIServerPublicIP": {
             "Description": "Public IP address of the EC2 instance",
-            "Value": { "Fn::GetAtt": [ "WebServerInstance", "PublicIp" ] }
+            "Value": { "Fn::GetAtt": [ "APIServerInstance", "PublicIp" ] }
         },
-        "WebServerPublicDNS": {
+        "APIServerPublicDNS": {
             "Description": "Public DNS name of the EC2 instance",
-            "Value": { "Fn::GetAtt": [ "WebServerInstance", "PublicDnsName" ] }
+            "Value": { "Fn::GetAtt": [ "APIServerInstance", "PublicDnsName" ] }
         },
-        "WebServerPrivateIP": {
+        "APIServerPrivateIP": {
             "Description": "Private IP address of the EC2 instance",
-            "Value": { "Fn::GetAtt": [ "WebServerInstance", "PrivateIp" ] }
+            "Value": { "Fn::GetAtt": [ "APIServerInstance", "PrivateIp" ] }
         },
-        "WebServerPrivateDNS": {
+        "APIServerPrivateDNS": {
             "Description": "Private DNS name of the EC2 instance",
-            "Value": { "Fn::GetAtt": [ "WebServerInstance", "PrivateDnsName" ] }
+            "Value": { "Fn::GetAtt": [ "APIServerInstance", "PrivateDnsName" ] }
         }
     }
 }

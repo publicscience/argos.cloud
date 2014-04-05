@@ -18,11 +18,17 @@ if __name__ == '__main__':
     commission_parser.add_argument('--max_size', type=int, help='the maximum autoscaling size', default=4)
     commission_parser.add_argument('--instance_type', type=str, help='the instance type for the application infrastructure', default='m3.medium')
 
+    # update
+    update_parser = subparsers.add_parser('update', help='update existing infrastructure')
+    update_parser.add_argument('--min_size', type=int, help='the minimum autoscaling size', default=1)
+    update_parser.add_argument('--max_size', type=int, help='the maximum autoscaling size', default=4)
+    update_parser.add_argument('--instance_type', type=str, help='the instance type for the application infrastructure', default='m3.medium')
+
     # decommission
     decommission_parser = subparsers.add_parser('decommission', help='decommissions infrastructure')
 
     # deploy
-    roles = ['app', 'knowledge', 'collector']
+    roles = ['api', 'front', 'knowledge', 'collector']
     deploy_parser = subparsers.add_parser('deploy', help='deploy to infrastructure')
     deploy_parser.add_argument('--roles', type=str, nargs='+', help='the role(s) to deploy', default=roles, choices=roles)
 
@@ -33,6 +39,13 @@ if __name__ == '__main__':
 
     if args.command == 'commission':
         cloud.commission(
+            args.env,
+            instance_type=args.instance_type,
+            min_size=args.min_size,
+            max_size=args.max_size)
+
+    elif args.command == 'update':
+        cloud.update(
             args.env,
             instance_type=args.instance_type,
             min_size=args.min_size,

@@ -1,0 +1,95 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description": "Creates an application frontend EC2 instance with port 80 open for HTTP.",
+
+  "Parameters" : {
+    "FrontServerInstanceType" : {
+      "Description" : "FrontServer EC2 instance type",
+      "Type" : "String",
+      "Default" : "m1.small",
+      "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m2.4xlarge","m3.medium","m3.large", "m3.xlarge","m3.2xlarge","c1.medium","c3.large", "c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge"],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "FrontGroup": {
+        "Description": "The group tag to apply to the instance.",
+        "Type": "String",
+        "Default": "front"
+    }
+  },
+
+  "Resources" : {
+    "FrontServerInstance" : {
+      "Type": "AWS::EC2::Instance",
+      "Properties" : {
+        "ImageId": { "Ref": "AppImageAMI" },
+        "InstanceType": { "Ref": "FrontServerInstanceType" },
+        "SecurityGroups" : [ { "Ref" : "FrontServerSecurityGroup" } ],
+        "KeyName":  { "Ref": "KeyName" },
+        "Tags": [
+            { "Key": "Name",
+              "Value": { "Fn::Join": [ "-", [
+                  { "Ref": "AppName" },
+                  { "Ref": "EnvironmentName" },
+                  { "Ref": "FrontGroup" }
+              ]]}
+            },
+            {
+              "Key": "Group",
+              "Value": { "Ref": "FrontGroup" }
+            },
+            {
+              "Key": "Env",
+              "Value": { "Ref": "EnvironmentName" }
+            },
+            {
+              "Key": "App",
+              "Value": { "Ref": "AppName" }
+            }
+        ]
+      }
+    },
+
+    "FrontServerSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable SSH access and HTTP access on the inbound port",
+        "SecurityGroupIngress" : [ {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "0.0.0.0/0"
+        }, {
+            "IpProtocol" : "tcp",
+            "FromPort" : "22",
+            "ToPort" : "22",
+            "CidrIp" : "0.0.0.0/0"
+        } ]
+      }
+    }
+  },
+
+    "Outputs": {
+        "FrontServerInstanceId": {
+            "Description": "InstanceId of the EC2 instance",
+            "Value": { "Ref": "FrontServerInstance" }
+        },
+        "FrontServerPublicIP": {
+            "Description": "Public IP address of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "FrontServerInstance", "PublicIp" ] }
+        },
+        "FrontServerPublicDNS": {
+            "Description": "Public DNS name of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "FrontServerInstance", "PublicDnsName" ] }
+        },
+        "FrontServerPrivateIP": {
+            "Description": "Private IP address of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "FrontServerInstance", "PrivateIp" ] }
+        },
+        "FrontServerPrivateDNS": {
+            "Description": "Private DNS name of the EC2 instance",
+            "Value": { "Fn::GetAtt": [ "FrontServerInstance", "PrivateDnsName" ] }
+        }
+    }
+}

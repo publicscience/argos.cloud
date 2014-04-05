@@ -23,6 +23,9 @@
 - name: enable uwsgi config (symlink)
   file: src=/etc/uwsgi/apps-available/{{ app_name }}.ini dest=/etc/uwsgi/apps-enabled/{{ app_name }}.ini state=link
 
+- name: disable uwsgi # supervisor will manage it.
+  service: name=uwsgi state=stopped enabled=no
+
 - name: create supervisord config folder
   file: dest=/etc/supervisor state=directory owner=root
 

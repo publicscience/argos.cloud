@@ -18,11 +18,11 @@ class FormationError(Exception):
 def wait_until_ready(name):
     status = get_stack(name).stack_status
 
-    while status == 'CREATE_IN_PROGRESS':
+    while status in ['CREATE_IN_PROGRESS', 'UPDATE_IN_PROGRESS']:
         time.sleep(10)
         status = get_stack(name).stack_status
 
-    if status != 'CREATE_COMPLETE':
+    if status not in ['CREATE_COMPLETE', 'UPDATE_COMPLETE']:
         raise FormationError('Formation creation failed, status was {0}'.format(status))
 
 def wait_until_terminated(name):

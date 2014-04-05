@@ -68,6 +68,9 @@ $ python manage.py staging commission
 # Deploy new changes to it.
 $ python manage.py staging deploy
 
+# Update the infrastructure.
+$ python manage.py staging update
+
 # Decommission it (i.e. dismantle the infrastructure)
 $ python manage.py staging decommission
 

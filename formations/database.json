@@ -142,7 +142,10 @@
       "Type": "AWS::RDS::DBSecurityGroup",
       "Properties": {
         "DBSecurityGroupIngress": [{
-          "EC2SecurityGroupName": { "Ref": "WebServerSecurityGroup" }
+          "EC2SecurityGroupName": { "Ref": "APIServerSecurityGroup" }
+        },
+        {
+          "EC2SecurityGroupName": { "Ref": "FrontServerSecurityGroup" }
         },
         {
           "EC2SecurityGroupName": { "Ref": "CollectorInstanceSecurityGroup" }

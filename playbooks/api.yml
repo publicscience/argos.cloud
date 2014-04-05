@@ -1,4 +1,4 @@
-- hosts: 'tag_Name_{{ app_name }}-{{ env_name }}-app'
+- hosts: 'tag_Name_{{ app_name }}-{{ env_name }}-api'
   sudo: yes
   remote_user: '{{ remote_user }}'
   vars:
@@ -12,6 +12,9 @@
       #broker_group: 'tag_Name_{{ app_name }}-{{ env_name }}-broker'
       #broker_host: '{{ hostvars[groups[broker_group][0]].ec2_private_dns_name }}'
       broker_host: 'foo'
+
+      # The uwsgi filename which has the API application.
+      wsgi_filename: 'application'
   roles:
       - common
       - app
