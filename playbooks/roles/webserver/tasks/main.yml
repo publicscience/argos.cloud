@@ -10,6 +10,9 @@
 - name: install sass
   gem: name=sass state=present
 
+- name: set sass path env variable
+  lineinfile: dest=/etc/environment line=SASS_PATH=. state=present
+
 - name: remove default nginx site
   file: path=/etc/nginx/sites-enabled/default state=absent
 
