@@ -4,12 +4,22 @@
 - name: create celery user
   user: name=celery group=celery state=present
 
-- name: copy celery init.d script
-  copy: src=celeryd dest=/etc/init.d/celeryd mode=0755
+- name: install supervisor
+  apt: pkg=supervisor state=installed
 
-- name: copy celery config
-  template: src=celeryd_config dest=/etc/default/celeryd owner=root
+- name: create supervisord config folder
+  file: dest=/etc/supervisor state=directory owner=root
+
+- name: copy supervisor program config
+  template: src=supervisor.conf dest=/etc/supervisor/conf.d/{{ app_name }}-celery.conf
+  register: supervisor_conf
   notify: restart celery
 
-- name: ensure celery is running
-  service: name=celeryd state=started
+- shell: supervisorctl reread
+  when: supervisor_conf.changed
+
+- shell: supervisorctl update
+  when: supervisor_conf.changed
+
+- name: ensure supervisor is running
+  service: name=supervisor state=started enabled=yes

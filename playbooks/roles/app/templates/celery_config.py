@@ -9,7 +9,7 @@ BROKER_CONNECTION_MAX_RETRIES = None
 CELERY_RESULT_BACKEND = 'redis://{{ broker_host }}:6379/0'
 
 # What modules to import on start.
-CELERY_IMPORTS = ('tests.tasks_test', 'jobs', 'digester.wikidigester',)
+CELERY_IMPORTS = ('argos.tasks',)
 
 # Propagate chord errors when they come up.
 CELERY_CHORD_PROPAGATES = True
@@ -30,3 +30,13 @@ EMAIL_HOST = '{{ email_host }}'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = '{{ celery_email_user }}'
 EMAIL_HOST_PASSWORD = '{{ celery_email_password }}'
+
+# If enabled pid and log directories will be created if missing.
+CELERY_CREATE_DIRS=1
+
+# Setting a maximum amount of tasks per worker
+# so the worker processes get regularly killed
+# (to reclaim memory). Not sure if this is the best
+# approach, but see:
+# https://github.com/publicscience/argos/issues/112
+CELERYD_MAX_TASKS_PER_CHILD=100
