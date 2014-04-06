@@ -5,6 +5,10 @@
     - nginx
     - supervisor
     - uwsgi-plugin-python3
+    - rubygems
+
+- name: install sass
+  gem: name=sass state=present
 
 - name: remove default nginx site
   file: path=/etc/nginx/sites-enabled/default state=absent
