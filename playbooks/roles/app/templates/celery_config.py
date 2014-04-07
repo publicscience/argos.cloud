@@ -47,22 +47,17 @@ from celery.schedules import crontab
 
 CELERY_TIMEZONE = 'UTC'
 CELERYBEAT_SCHEDULE = {
-    #'collect-articles': {
-        #'task': 'argos.tasks.periodic.collect',
-        #'schedule': crontab(minute=0, hour='*')
-    #},
-    #'cluster-articles': {
-        #'task': 'argos.tasks.periodic.cluster_articles',
-        #'schedule': crontab(minute=30, hour='*')
-    #},
-    #'cluster-events': {
-        #'task': 'argos.tasks.periodic.cluster_events',
-        #'schedule': crontab(minute=30, hour='*')
-    #},
-    'test-task': {
-        'task': 'argos.tasks.notify',
-        'schedule': crontab(minute=30, hour='*'),
-        'args': ('this is a beat test',)
+    'collect-articles': {
+        'task': 'argos.tasks.periodic.collect',
+        'schedule': crontab(minute=0, hour='*')
+    },
+    'cluster-articles': {
+        'task': 'argos.tasks.periodic.cluster_articles',
+        'schedule': crontab(minute=30, hour='*')
+    },
+    'cluster-events': {
+        'task': 'argos.tasks.periodic.cluster_events',
+        'schedule': crontab(minute=30, hour='*')
     }
 }
 
