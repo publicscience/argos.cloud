@@ -1,8 +1,31 @@
 - name: load default sources
   command: chdir={{ app_path }} {{ venv_path }}/bin/python manage.py create:sources
 
-- name: copy ponder script
-  template: src=ponder.sh dest=/var/ponder.sh mode=0751
+- name: create celery group
+  group: name=celery state=present
 
-- name: create ponder cron job
-  cron: name='ponder' special_time=hourly job=/var/ponder.sh cron_file=ponder user=root state=present
+- name: create celery user
+  user: name=celery group=celery state=present
+
+- name: create celerybeat schedule folder
+  file: dest=/var/lib/celery/ state=directory owner=celery
+
+- name: install supervisor
+  apt: pkg=supervisor state=installed
+
+- name: create supervisord config folder
+  file: dest=/etc/supervisor state=directory owner=root
+
+- name: copy supervisor program config
+  template: src=supervisor.conf dest=/etc/supervisor/conf.d/{{ app_name }}-celerybeat.conf
+  register: supervisor_conf
+  notify: restart celerybeat
+
+- shell: supervisorctl reread
+  when: supervisor_conf.changed
+
+- shell: supervisorctl update
+  when: supervisor_conf.changed
+
+- name: ensure supervisor is running
+  service: name=supervisor state=started enabled=yes

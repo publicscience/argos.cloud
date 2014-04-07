@@ -1,3 +1,2 @@
-# This is hanging for some reason.
-#- name: restart redis
-#  service: name=redis-server state=restarted
+- name: restart redis
+  supervisorctl: name=redis state=restarted

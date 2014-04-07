@@ -5,6 +5,8 @@
     - python-pycurl
     - python-apt
 
+
+# RabbitMQ
 - name: Add RabbitMQ apt cache
   apt_repository: repo='deb http://www.rabbitmq.com/debian testing main' state=present
 
@@ -17,12 +19,45 @@
 - name: Ensure RabbitMQ is running
   service: name=rabbitmq-server enabled=yes state=started
 
+
+# Redis
+- name: create redis group
+  group: name=redis state=present
+
+- name: create redis user
+  user: name=redis group=redis state=present
+
+- name: Add Redis apt cache
+  apt_repository: repo='ppa:rwky/redis' state=present
+
 - name: Install Redis
   apt: pkg=redis-server state=installed
 
 - name: Copy Redis config
   copy: src=redis.conf dest=/etc/redis/redis.conf
-  #notify: restart redis # restart redis if config has changed.
+  notify: restart redis # restart redis if config has changed.
+
+
+# Supervisor
+- name: install supervisor
+  apt: pkg=supervisor state=installed
+
+- name: create supervisord config folder
+  file: dest=/etc/supervisor state=directory owner=root
+
+- name: copy supervisor program config
+  copy: src=supervisor.conf dest=/etc/supervisor/conf.d/redis.conf
+  register: supervisor_conf
+  notify: restart redis
+
+- shell: supervisorctl reread
+  when: supervisor_conf.changed
+
+- shell: supervisorctl update
+  when: supervisor_conf.changed
+
+- name: ensure supervisor is running
+  service: name=supervisor state=started enabled=yes
 
 - name: Ensure Redis is running
   service: name=redis-server enabled=yes state=started

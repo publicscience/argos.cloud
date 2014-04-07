@@ -12,3 +12,6 @@
 
 - name: copy celery config for enviroment
   template: src=celery_config.py dest={{ app_path }}/argos/conf/celery.py mode=0644
+
+- name: run migrations
+  command: chdir={{ app_path}} {{ venv_path }}/bin/python manage.py db upgrade

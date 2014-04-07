@@ -9,11 +9,10 @@
       knowledge_host: '{{ hostvars[groups[knowledge_group][0]].ec2_private_dns_name }}'
 
       # For now, the collector is also the broker.
-      broker_group: 'tag_Name_{{ app_name }}-{{ env_name }}-collector'
-      broker_host: '{{ hostvars[groups[broker_group][0]].ec2_private_dns_name }}'
+      broker_host: 'localhost'
   roles:
       - common
       - app
-      - collector
       - broker
       - worker
+      - collector
