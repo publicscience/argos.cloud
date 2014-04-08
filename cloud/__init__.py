@@ -65,7 +65,8 @@ def update(env, min_size=1, max_size=4, instance_type=DEFAULT_INSTANCE_TYPE, db_
 
     logger.info('CONFIGURING INFRASTRUCTURE ================================================')
     logger.info('Adding instances to known hosts...')
-    targets = [manage.formations.get_output(stack, key) for key in ['KnowledgePublicIP', 'KnowledgePublicDNS', 'WebServerPublicIP', 'WebServerPublicDNS', 'CollectorPublicIP', 'CollectorPublicDNS']]
+    targets = [manage.formations.get_output(stack, key) for key in ['KnowledgePublicIP', 'KnowledgePublicDNS', 'APIServerPublicIP', 'APIServerPublicDNS', 'FrontServerPublicIP', 'FrontServerPublicDNS', 'CollectorPublicIP', 'CollectorPublicDNS']]
+    print(targets)
     command.add_to_known_hosts(targets)
 
     deploy(env)
@@ -122,7 +123,7 @@ def commission(env, min_size=1, max_size=4, instance_type=DEFAULT_INSTANCE_TYPE,
 
     logger.info('CONFIGURING INFRASTRUCTURE ================================================')
     logger.info('Adding instances to known hosts...')
-    targets = [manage.formations.get_output(stack, key) for key in ['KnowledgePublicIP', 'KnowledgePublicDNS', 'WebServerPublicIP', 'WebServerPublicDNS', 'CollectorPublicIP', 'CollectorPublicDNS']]
+    targets = [manage.formations.get_output(stack, key) for key in ['KnowledgePublicIP', 'KnowledgePublicDNS', 'APIServerPublicIP', 'APIServerPublicDNS', 'FrontServerPublicIP', 'FrontServerPublicDNS', 'CollectorPublicIP', 'CollectorPublicDNS']]
     command.add_to_known_hosts(targets)
 
     deploy(env)
