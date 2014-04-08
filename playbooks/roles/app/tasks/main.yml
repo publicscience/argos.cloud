@@ -13,5 +13,11 @@
 - name: copy celery config for enviroment
   template: src=celery_config.py dest={{ app_path }}/argos/conf/celery.py mode=0644
 
+# Note: if you hit an error here, along the lines of:
+# sqlalchemy.exc.ProgrammingError: (ProgrammingError) column "<something>" of relation "article" already exists)
+# it likely means your database is already fully migrated, but it has not been tagged as such.
+# The easiest way to resolve this is to ssh into a machine with database access, and in the app directory, run:
+# python manage.py db stamp head
+# Which will mark it as being up-to-date.
 - name: run migrations
   command: chdir={{ app_path}} {{ venv_path }}/bin/python manage.py db upgrade
