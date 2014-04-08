@@ -5,13 +5,31 @@
     - nginx
     - supervisor
     - uwsgi-plugin-python3
+
+- name: add latest node apt repository
+  apt_repository: repo='ppa:chris-lea/node.js' state=present
+
+- name: install front dependencies
+  apt: pkg={{ item }} state=installed
+  with_items:
     - rubygems
+    - nodejs
 
 - name: install sass
   gem: name=sass state=present
 
 - name: set sass path env variable
   lineinfile: dest=/etc/environment line=SASS_PATH=. state=present
+
+- name: install bower
+  npm: name=bower global=yes production=yes state=present
+
+- name: make js vendor folder
+  file: path={{ app_path }}/argos/web/front/static/js/vendor state=directory owner=www-data group=www-data mode=0777 recurse=yes
+
+- name: install bower packages
+  command: chdir={{ app_path }}/argos/web/front bower install
+  sudo: no
 
 - name: remove default nginx site
   file: path=/etc/nginx/sites-enabled/default state=absent
