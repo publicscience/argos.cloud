@@ -53,11 +53,23 @@ CELERYBEAT_SCHEDULE = {
     },
     'cluster-articles': {
         'task': 'argos.tasks.periodic.cluster_articles',
-        'schedule': crontab(minute='*/10')
+        'schedule': crontab(minute='*/10'),
+        'kwargs': { "threshold": 0.5 }
     },
     'cluster-events': {
         'task': 'argos.tasks.periodic.cluster_events',
-        'schedule': crontab(minute='*/10')
+        'schedule': crontab(minute='*/10'),
+        'kwargs': { "threshold": 0.5 }
+    },
+    'recluster-events': {
+        'task': 'argos.tasks.periodic.recluster_events',
+        'schedule': crontab(minute='*/10'),
+        'kwargs': { "threshold": 0.5 }
+    },
+    'recluster-articles': {
+        'task': 'argos.tasks.periodic.recluster_articles',
+        'schedule': crontab(minute='*/10'),
+        'kwargs': { "threshold": 0.5 }
     }
 }
 
