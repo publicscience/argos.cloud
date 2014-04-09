@@ -16,7 +16,7 @@
     - nodejs
 
 - name: install sass
-  gem: name=sass state=present
+  gem: name=sass state=present user_install=no
 
 - name: set sass path env variable
   lineinfile: dest=/etc/environment line=SASS_PATH=. state=present

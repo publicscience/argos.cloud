@@ -10,6 +10,9 @@
 - name: create celerybeat schedule folder
   file: dest=/var/lib/celery/ state=directory owner=celery
 
+- name: create celery log folder
+  file: dest=/var/log/celery/ state=directory
+
 - name: install supervisor
   apt: pkg=supervisor state=installed
 

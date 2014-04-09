@@ -10,6 +10,9 @@
 - name: create supervisord config folder
   file: dest=/etc/supervisor state=directory owner=root
 
+- name: create celery log folder
+  file: dest=/var/log/celery/ state=directory
+
 - name: copy supervisor program config
   template: src=supervisor.conf dest=/etc/supervisor/conf.d/{{ app_name }}-celery.conf
   register: supervisor_conf
