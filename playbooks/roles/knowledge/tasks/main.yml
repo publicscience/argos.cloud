@@ -46,6 +46,9 @@
     - geo_coordinates
     - persondata
     - disambiguations
+    - instance_types
+    - mappingbased_properties
+    - raw_infobox_properties
   register: datasets
 
 - name: extract downloaded datasets
