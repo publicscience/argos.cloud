@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+# spotlight:          Startup script for DBpedia Spotlight.
+#
+# description:        Startup script for DBpedia Spotlight.
+
+SPOTLIGHT_HOME={{ spotlight_path }}
+export SPOTLIGHT_HOME
+
+start() {
+        echo "Starting DBpedia Spotlight..."
+        cd $SPOTLIGHT_HOME
+        java -jar -Xmx16g dbpedia-spotlight.jar en_2+2 http://localhost:2222/rest 2>&1 &
+        echo $! &> /tmp/spotlight
+        sleep 2
+        echo "done."
+}
+
+stop() {
+        echo "Stopping DBpedia Spotlight..."
+        cat /tmp/spotlight | xargs -i kill -9 {}
+        echo "done"
+}
+
+# See how we were called.
+case "$1" in
+        start)
+                start
+                ;;
+        stop)
+                stop
+                ;;
+        restart)
+                stop
+                start
+                ;;
+        *)
+                echo $"Usage: spotlight {start|stop|restart}"
+                exit
+esac
+

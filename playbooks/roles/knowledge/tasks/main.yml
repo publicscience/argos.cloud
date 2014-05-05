@@ -49,6 +49,7 @@
     - instance_types
     - mappingbased_properties
     - raw_infobox_properties
+    - page_links
   register: datasets
 
 - name: extract downloaded datasets
@@ -61,6 +62,8 @@
 - name: ensure fuseki is running
   service: name=fuseki enabled=yes state=started
 
+
+  # Stanford NER
 - name: download stanford ner
   get_url: url={{ ner_url }} dest=/srv/ner.zip
 
@@ -74,3 +77,26 @@
 
 - name: ensure ner is running
   service: name=ner enabled=yes state=started
+
+
+  # DBpedia Spotlight
+- name: create spotlight directory
+  file: path={{ spotlight_path }} state=directory
+
+- name: download dbpedia spotlight
+  get_url: url={{ spotlight_url }} dest={{ spotlight_path }}dbpedia-spotlight.jar
+
+- name: download dbpedia spotlight data
+  get_url: url={{ spotlight_data_url }} dest={{ spotlight_path}}en_2+2.tar.gz
+
+- name: extract dbpedia spotlight data
+  command: tar -xzvf en_2+2.tar.gz chdir={{ spotlight_path }}
+
+- name: copy dbpedia spotlight init.d script
+  template: src=spotlight-init dest=/etc/init.d/spotlight mode=755
+  notify:
+      - restart spotlight
+
+- name: ensure dbpedia spotlight is running
+  service: name=spotlight enabled=yes state=started
+

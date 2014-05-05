@@ -4,6 +4,9 @@
 - name: restart ner
   service: name=ner state=restarted
 
+- name: restart spotlight
+  service: name=spotlight state=restarted
+
 - name: update knowledge
   shell: /srv/jena/bin/tdbloader2 --loc /tmp/knodb {{ knowledge_path }}*.ttl
   notify: move knowledge
