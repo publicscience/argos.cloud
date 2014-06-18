@@ -20,5 +20,7 @@ ADMINS = {{ error_admins }}
 BIZVIZZ_API_KEY = '{{ bizvizz_api_key }}'
 OPENSECRETS_API_KEY = '{{ opensecrets_api_key }}'
 INSTAGRAM_CLIENT_ID = '{{ instagram_client_id }}'
+SUNLIGHT_API_KEY = '{{ sunlight_api_key }}'
+FLICKR_CLIENT_ID = '{{ flickr_client_id }}'
 
 # NOTE also need to setup social media api keys and secrets.

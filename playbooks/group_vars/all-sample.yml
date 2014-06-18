@@ -35,3 +35,9 @@ celery_email_user: someone@gmail.com
 celery_email_password: somepass
 celery_admin_name: some admin
 celery_admin_email: admin@mail.com
+
+bizvizz_api_key: foo
+opensecrets_api_key: foo
+instagram_client_id: foo
+sunlight_api_key: foo
+flickr_client_id: foo
